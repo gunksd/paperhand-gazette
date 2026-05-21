@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Paperhand Gazette — Obituaries for Coins You Sold Too Early</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  :root{
+    --paper:#f1e7d0;
+    --paper-2:#ebdfc1;
+    --ink:#15110c;
+    --ink-soft:#3a312a;
+    --rule:#1a1612;
+    --blood:#8a0d0d;
+    --blood-deep:#5a0606;
+    --stamp:#a0331f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);}
+  body{
+    font-family:'EB Garamond', Georgia, serif;
+    font-size:18px;
+    line-height:1.55;
+    background-image:
+      radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0 0.04  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size:3px 3px, 240px 240px;
+    min-height:100vh;
+  }
+  /* faint paper folds */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;
+    background:
+      linear-gradient(90deg, transparent 49.9%, rgba(0,0,0,0.06) 50%, transparent 50.1%),
+      linear-gradient(0deg, rgba(0,0,0,0.10), transparent 25%, transparent 75%, rgba(0,0,0,0.10));
+    mix-blend-mode:multiply;
+    z-index:1;
+  }
+  .sheet{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:32px 48px 80px;}
+
+  /* ======= MASTHEAD ======= */
+  .top-rule{display:flex;justify-content:space-between;align-items:center;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;border-bottom:1px solid var(--rule);padding-bottom:8px;}
+  .top-rule span{display:inline-block}
+  .masthead{
+    text-align:center;
+    padding:18px 0 6px;
+    border-bottom:3px double var(--rule);
+  }
+  .masthead h1{
+    font-family:'UnifrakturCook',serif;
+    font-weight:700;
+    font-size:clamp(54px,9vw,128px);
+    margin:0;
+    line-height:.95;
+    letter-spacing:.01em;
+  }
+  .masthead .tag{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-size:18px;
+    margin-top:10px;
+    color:var(--ink-soft);
+  }
+  .meta-rule{
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+    font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    border-bottom:1px solid var(--rule);padding:8px 0;gap:24px;
+  }
+  .meta-rule .center{text-align:center;font-style:italic;text-transform:none;letter-spacing:.04em;font-family:'Playfair Display',serif;font-size:14px;}
+  .meta-rule .right{text-align:right}
+
+  /* ======= LANDING / CONNECT ======= */
+  .landing{display:grid;grid-template-columns:1.3fr .9fr;gap:48px;padding-top:36px;}
+  @media (max-width:880px){.landing{grid-template-columns:1fr}}
+
+  .lede h2{
+    font-family:'Playfair Display',serif;font-weight:900;font-style:italic;
+    font-size:clamp(40px,5.5vw,72px);line-height:1.02;margin:0 0 18px;
+  }
+  .lede h2 em{color:var(--blood);font-style:italic;}
+  .dropcap::first-letter{
+    font-family:'Playfair Display',serif;font-weight:900;
+    float:left;font-size:5.2em;line-height:.85;padding:6px 10px 0 0;color:var(--blood);
+  }
+  .pull{
+    border-top:2px solid var(--rule);border-bottom:2px solid var(--rule);
+    padding:18px 0;margin:24px 0;
+    font-family:'Playfair Display',serif;font-style:italic;font-size:24px;line-height:1.3;
+    text-align:center;color:var(--ink-soft);
+  }
+  .pull::before{content:"\201C";font-size:48px;line-height:0;vertical-align:-12px;color:var(--blood);margin-right:6px;}
+  .pull::after{content:"\201D";font-size:48px;line-height:0;vertical-align:-22px;color:var(--blood);margin-left:6px;}
+
+  .sidebar{
+    border:1px solid var(--rule);
+    background:var(--paper-2);
+    padding:22px;
+    position:relative;
+  }
+  .sidebar h3{
+    font-family:'Playfair Display',serif;font-weight:900;text-transform:uppercase;
+    letter-spacing:.05em;font-size:14px;margin:0 0 12px;text-align:center;
+    border-bottom:1px solid var(--rule);padding-bottom:8px;
+  }
+  .stamp{
+    position:absolute;top:-14px;right:-14px;
+    width:120px;height:120px;border:3px double var(--stamp);border-radius:50%;
+    transform:rotate(-12deg);color:var(--stamp);
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.12em;
+    background:rgba(241,231,208,.7);
+    line-height:1.15;
+  }
+  .stamp small{display:block;font-size:9px;margin-top:2px}
+
+  .connect-btn{
+    display:block;width:100%;
+    background:var(--ink);color:var(--paper);
+    border:none;padding:18px;
+    font-family:'Playfair Display',serif;font-weight:900;
+    text-transform:uppercase;letter-spacing:.18em;font-size:16px;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s;
+    box-shadow:4px 4px 0 var(--blood);
+  }
+  .connect-btn:hover{background:var(--blood);transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+  .connect-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--blood)}
+  .demo-btn{
+    display:block;width:100%;margin-top:10px;
+    background:transparent;color:var(--ink-soft);border:1px dashed var(--rule);
+    padding:10px;font-family:'Special Elite',monospace;font-size:11px;
+    letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+  }
+  .demo-btn:hover{color:var(--blood);border-color:var(--blood)}
+
+  .fineprint{font-family:'Special Elite',monospace;font-size:11px;color:var(--ink-soft);line-height:1.6;margin-top:14px;}
+  .fineprint b{color:var(--blood)}
+
+  /* ======= LOADING ======= */
+  .working{display:none;text-align:center;padding:80px 20px;}
+  .working.active{display:block}
+  .working h3{font-family:'Playfair Display',serif;font-style:italic;font-size:36px;margin:0 0 8px;}
+  .working .lines{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);max-width:560px;margin:18px auto;text-align:left;}
+  .working .lines div{padding:6px 0;border-bottom:1px dotted var(--rule);opacity:.25;transition:opacity .3s;display:flex;justify-content:space-between}
+  .working .lines div.on{opacity:1}
+  .working .lines div.on::after{content:"  ✓ DONE";color:var(--blood);}
+
+  /* ======= REPORT ======= */
+  .report{display:none}
+  .report.active{display:block}
+
+  .obit-headline{
+    text-align:center;padding:36px 0 24px;
+    border-bottom:3px double var(--rule);margin-top:30px;
+  }
+  .obit-kicker{
+    font-family:'Special Elite',monospace;letter-spacing:.3em;font-size:12px;
+    text-transform:uppercase;color:var(--blood);margin-bottom:10px;
+  }
+  .obit-headline h2{
+    font-family:'Playfair Display',serif;font-weight:900;
+    font-size:clamp(48px,7vw,108px);line-height:.95;margin:0;
+    letter-spacing:-.01em;
+  }
+  .obit-headline .deck{
+    font-family:'Playfair Display',serif;font-style:italic;font-size:22px;
+    margin-top:14px;color:var(--ink-soft);max-width:780px;margin-left:auto;margin-right:auto;
+  }
+
+  /* hero obit */
+  .hero-obit{
+    display:grid;grid-template-columns:1.1fr 1.3fr;gap:36px;padding:36px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  @media (max-width:880px){.hero-obit{grid-template-columns:1fr}}
+
+  .tomb{
+    border:1px solid var(--rule);background:var(--paper-2);
+    padding:28px 22px;text-align:center;position:relative;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><path d='M0 10 L10 0' stroke='%231a1612' stroke-opacity='0.04' stroke-width='1'/></svg>");
+  }
+  .tomb::before{
+    content:"";position:absolute;inset:8px;border:1px solid var(--rule);pointer-events:none;
+  }
+  .cross{font-size:32px;color:var(--blood);}
+  .tomb h3{
+    font-family:'Playfair Display',serif;font-weight:900;font-size:56px;
+    margin:8px 0 4px;letter-spacing:.04em;
+  }
+  .tomb .ticker{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.3em;color:var(--ink-soft)}
+  .tomb .dates{
+    font-family:'Playfair Display',serif;font-style:italic;
+    margin:18px 0;font-size:15px;
+  }
+  .tomb .lost-label{
+    font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.25em;text-transform:uppercase;
+    margin-top:18px;
+  }
+  .tomb .lost-amount{
+    font-family:'Playfair Display',serif;font-weight:900;font-size:52px;
+    color:var(--blood);line-height:1;margin-top:6px;
+  }
+  .tomb .lost-sub{font-family:'Special Elite',monospace;font-size:11px;color:var(--ink-soft);margin-top:8px;letter-spacing:.1em}
+
+  .eulogy h4{
+    font-family:'Playfair Display',serif;font-weight:900;text-transform:uppercase;
+    letter-spacing:.08em;font-size:13px;margin:0 0 8px;color:var(--blood);
+    border-bottom:1px solid var(--rule);padding-bottom:6px;
+  }
+  .eulogy p{margin:0 0 12px;font-size:18px;line-height:1.6;}
+  .eulogy .stat-row{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:0;
+    border:1px solid var(--rule);margin-top:18px;
+  }
+  .eulogy .stat-row > div{
+    padding:14px 16px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  }
+  .eulogy .stat-row > div:nth-child(2n){border-right:none}
+  .eulogy .stat-row > div:nth-last-child(-n+2){border-bottom:none}
+  .eulogy .stat-row .label{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  .eulogy .stat-row .val{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;margin-top:4px}
+  .eulogy .stat-row .val.red{color:var(--blood)}
+
+  /* secondary obits grid */
+  .others-head{
+    text-align:center;font-family:'Playfair Display',serif;font-style:italic;
+    font-size:28px;padding:30px 0 18px;border-bottom:1px solid var(--rule);
+  }
+  .others{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+    border-left:1px solid var(--rule);
+  }
+  @media (max-width:880px){.others{grid-template-columns:1fr}}
+  .obit-card{
+    border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    padding:22px 20px;
+  }
+  .obit-card .ticker{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.25em;color:var(--ink-soft)}
+  .obit-card h5{
+    font-family:'Playfair Display',serif;font-weight:900;font-size:32px;
+    margin:4px 0 6px;
+  }
+  .obit-card .span{font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:var(--ink-soft);margin-bottom:14px;}
+  .obit-card .lost{font-family:'Playfair Display',serif;font-weight:900;font-size:28px;color:var(--blood)}
+  .obit-card .lost-detail{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-soft);margin-top:4px;text-transform:uppercase;}
+  .obit-card .quote{margin-top:14px;font-style:italic;font-size:14px;color:var(--ink-soft);border-top:1px dotted var(--rule);padding-top:10px}
+
+  /* footer */
+  .footer-band{
+    margin-top:48px;border-top:3px double var(--rule);padding-top:18px;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+    font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .share-btn{
+    background:var(--blood);color:var(--paper);border:none;padding:12px 20px;
+    font-family:'Playfair Display',serif;font-weight:900;letter-spacing:.18em;text-transform:uppercase;font-size:13px;
+    cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+  }
+  .share-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+
+  .filtered-strip{
+    margin-top:30px;padding:14px 18px;border:1px dashed var(--rule);
+    font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.05em;color:var(--ink-soft);
+    background:rgba(0,0,0,0.02);
+  }
+  .filtered-strip b{color:var(--blood)}
+
+  /* shake on reveal */
+  @keyframes ink-in{from{opacity:0;transform:translateY(8px) rotate(-.4deg)}to{opacity:1;transform:none}}
+  .reveal>*{animation:ink-in .6s ease both}
+  .reveal>*:nth-child(2){animation-delay:.08s}
+  .reveal>*:nth-child(3){animation-delay:.16s}
+  .reveal>*:nth-child(4){animation-delay:.24s}
+  .reveal>*:nth-child(5){animation-delay:.32s}
+  .reveal>*:nth-child(6){animation-delay:.40s}
+
+  .err{color:var(--blood);font-family:'Special Elite',monospace;font-size:13px;margin-top:10px}
+
+  /* lang switch */
+  .lang-switch{position:fixed;top:14px;right:18px;z-index:10;display:flex;gap:0;border:1px solid var(--rule);background:var(--paper);font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.1em;}
+  .lang-switch button{background:transparent;border:none;padding:6px 12px;cursor:pointer;color:var(--ink-soft);font-family:inherit;font-size:inherit;letter-spacing:inherit}
+  .lang-switch button.on{background:var(--ink);color:var(--paper)}
+
+  /* clean-hands edition */
+  .clean{display:none;text-align:center;padding:60px 20px 30px;}
+  .clean.active{display:block}
+  .clean .seal{
+    width:200px;height:200px;margin:0 auto 24px;border:4px double var(--ink);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    font-family:'Playfair Display',serif;font-weight:900;font-size:18px;text-transform:uppercase;
+    transform:rotate(-6deg);color:var(--ink);letter-spacing:.1em;line-height:1.2;
+    background:rgba(255,255,255,.4);
+  }
+  .clean .seal small{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.2em;margin-top:6px;color:var(--ink-soft)}
+  .clean h2{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(40px,6vw,72px);margin:20px 0 12px;line-height:1}
+  .clean p{font-family:'EB Garamond',serif;font-size:20px;font-style:italic;max-width:560px;margin:0 auto 30px;color:var(--ink-soft)}
+  .clean .actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .clean .actions button{background:var(--ink);color:var(--paper);border:none;padding:14px 22px;font-family:'Playfair Display',serif;font-weight:900;letter-spacing:.15em;text-transform:uppercase;font-size:13px;cursor:pointer;box-shadow:3px 3px 0 var(--blood);}
+  .clean .actions button:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--blood);}
+
+  /* QR modal */
+  .qr-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px}
+  .qr-overlay.active{display:flex}
+  .qr-card{background:var(--paper);border:1px solid var(--rule);padding:28px;max-width:380px;text-align:center;position:relative;box-shadow:6px 6px 0 var(--blood);}
+  .qr-card h4{font-family:'Playfair Display',serif;font-weight:900;font-size:22px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;}
+  .qr-card p{font-family:'EB Garamond',serif;font-size:15px;margin:0 0 18px;color:var(--ink-soft)}
+  .qr-card #qrcode{display:flex;justify-content:center;padding:14px;background:#fff;border:1px solid var(--rule)}
+  .qr-card .close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink-soft);}
+  .qr-card .url-strip{margin-top:14px;font-family:'Special Elite',monospace;font-size:11px;color:var(--ink-soft);word-break:break-all;border-top:1px dotted var(--rule);padding-top:12px}
+  .alt-btn{display:block;width:100%;margin-top:8px;background:transparent;color:var(--ink-soft);border:1px dashed var(--rule);padding:10px;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;}
+  .alt-btn:hover{color:var(--blood);border-color:var(--blood)}
+
+  /* share-image modal */
+  .share-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:60;align-items:center;justify-content:center;padding:20px;overflow:auto}
+  .share-overlay.active{display:flex}
+  .share-card{background:var(--paper);border:1px solid var(--rule);padding:22px;max-width:520px;width:100%;text-align:center;position:relative;box-shadow:6px 6px 0 var(--blood);}
+  .share-card h4{font-family:'Playfair Display',serif;font-weight:900;font-size:20px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;}
+  .share-card p{font-family:'EB Garamond',serif;font-size:14px;margin:0 0 14px;color:var(--ink-soft)}
+  .share-card .close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink-soft);}
+  .share-card #shareImg{max-width:100%;max-height:60vh;border:1px solid var(--rule);background:#fff}
+  .share-card .ops{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .share-card .ops button{background:var(--ink);color:var(--paper);border:none;padding:10px 16px;font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px;cursor:pointer;box-shadow:2px 2px 0 var(--blood)}
+  .share-card .ops button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--blood)}
+  .share-card .hint{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-soft);margin-top:10px;text-transform:uppercase}
+
+  /* report-footer "try another" */
+  .report-back{display:flex;justify-content:center;margin-top:24px;padding-bottom:8px}
+  .report-back button{background:transparent;color:var(--ink);border:1px solid var(--rule);padding:12px 22px;font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-size:12px;cursor:pointer}
+  .report-back button:hover{background:var(--ink);color:var(--paper)}
+</style>
+</head>
+<body>
+<div class="lang-switch">
+  <button data-lang="en" class="on">EN</button>
+  <button data-lang="zh">中文</button>
+</div>
+
+<main class="sheet">
+
+  <div class="top-rule">
+    <span>Vol. X · No. <span id="editionNo">000</span></span>
+    <span id="todayDate">— · —</span>
+    <span data-i18n="price">Price: One Bag of Regret</span>
+  </div>
+
+  <header class="masthead">
+    <h1 data-i18n="title">The Paperhand Gazette</h1>
+    <div class="tag" data-i18n="tagline">— All the losses fit to print —</div>
+  </header>
+
+  <div class="meta-rule">
+    <span data-i18n="edition">Late Edition · On-Chain Bureau</span>
+    <span class="center" data-i18n="subtitle">Obituaries for the coins you sold too early</span>
+    <span class="right" data-i18n="poweredBy">Honeypot-Filtered · Powered by Token Core</span>
+  </div>
+
+  <!-- ============ LANDING ============ -->
+  <section class="landing" id="landing">
+    <div class="lede">
+      <h2 data-i18n-html="heroH">Every wallet has its <em>ghosts</em>.<br/>Yours is about to speak.</h2>
+      <p class="dropcap" data-i18n="heroP">Connect a read-only wallet and we will exhume every token you ever sold, look up where it trades today, and calculate — to the dollar — the bag you dropped. We will write a short obituary for each one. The biggest casualty earns the front page.</p>
+      <div class="pull" data-i18n="pull">If they had only held a little longer, they would be reading this from a yacht.</div>
+      <p style="font-size:16px;color:var(--ink-soft)" data-i18n="safety">No private keys. No signatures that move funds. Honeypots, rugs and known scam tokens are filtered before any number is printed. We measure regret, not pump-and-dump phantom gains.</p>
+    </div>
+
+    <aside class="sidebar">
+      <div class="stamp"><span data-i18n="stamp">CONFIDENTIAL</span><small data-i18n="stampS1">FOR THE BEARER</small><small data-i18n="stampS2">OF THIS WALLET</small></div>
+      <h3 data-i18n="sideH">Today's Issue</h3>
+      <p style="font-size:15px;margin-top:0" data-i18n-html="sideP">We will scan up to <b>5 years</b> of your Ethereum trading history, cross-reference each token's all-time high, exclude rugged contracts, and rank your largest unrealized goodbye.</p>
+      <button class="connect-btn" id="connectBtn" data-i18n="connect">Read My Obituary →</button>
+      <button class="alt-btn" id="qrBtn" data-i18n="openMobile">▸ Open in imToken / mobile wallet</button>
+      <button class="demo-btn" id="demoBtn" data-i18n="sample">▸ See a sample edition</button>
+      <div class="fineprint" data-i18n-html="fineprint">
+        Filters: <b>GoPlus</b> honeypot signature, transfer-tax > 10%, blacklist functions, mint authority, low-liquidity ghost tokens.<br/>
+        Sources: Etherscan logs · CoinGecko ATH · imToken Token Core for address resolution.
+      </div>
+      <div class="err" id="errMsg"></div>
+    </aside>
+  </section>
+
+  <!-- ============ WORKING ============ -->
+  <section class="working" id="working">
+    <div class="obit-kicker" data-i18n="workKicker">— Setting type · Pressing tonight's edition —</div>
+    <h3 data-i18n="workH">Exhuming the dead bags…</h3>
+    <div class="lines" id="workLines">
+      <div data-step="0"><span data-i18n="step0">Reading wallet history from chain</span></div>
+      <div data-step="1"><span data-i18n="step1">Identifying every token ever sold</span></div>
+      <div data-step="2"><span data-i18n="step2">Filtering honeypots and rugged contracts</span></div>
+      <div data-step="3"><span data-i18n="step3">Pulling all-time highs from CoinGecko</span></div>
+      <div data-step="4"><span data-i18n="step4">Computing the size of each goodbye</span></div>
+      <div data-step="5"><span data-i18n="step5">Composing eulogies</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CLEAN HANDS (special edition for empty/no-loss wallets) ============ -->
+  <section class="clean" id="clean">
+    <div class="seal"><span data-i18n="sealLine1">NO OBITUARIES</span><span data-i18n="sealLine2">TO PRINT</span><small data-i18n="sealSmall">CERTIFIED CLEAN HANDS</small></div>
+    <h2 data-i18n="cleanH">A Quiet Edition.</h2>
+    <p id="cleanReason" data-i18n="cleanP">This wallet has no recorded paperhands. Either it diamond-handed everything, or it hasn't sold yet. The Gazette tips its hat.</p>
+    <p style="font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.18em;color:var(--ink-soft)" id="cleanAddr">0x…</p>
+    <div class="actions">
+      <button id="cleanBack" data-i18n="tryAnother">Try another wallet</button>
+      <button id="cleanSample" data-i18n="viewSample">Read sample edition</button>
+    </div>
+  </section>
+
+  <!-- ============ REPORT ============ -->
+  <section class="report" id="report">
+
+    <div class="obit-headline reveal">
+      <div class="obit-kicker" data-i18n="frontKicker">— Front Page · The Largest Goodbye —</div>
+      <h2 id="frontHeadline">A NINE-FIGURE FAREWELL</h2>
+      <div class="deck" id="frontDeck">In which the bearer of <span id="shortAddr">0x…</span> bid an early adieu to the asset of a lifetime.</div>
+    </div>
+
+    <div class="hero-obit reveal">
+      <div class="tomb">
+        <div class="cross">✝</div>
+        <h3 id="heroName">PEPE</h3>
+        <div class="ticker" id="heroTicker">$PEPE</div>
+        <div class="dates" id="heroDates">Bought 14 Apr 2023 · Sold 03 May 2023</div>
+        <div class="lost-label" data-i18n="couldBeWorth">Could be worth today</div>
+        <div class="lost-amount" id="heroLoss">$1,284,402</div>
+        <div class="lost-sub" id="heroLossSub">at all-time-high price · 218,000× missed</div>
+      </div>
+      <div class="eulogy">
+        <h4 data-i18n="inMemory">In Loving Memory</h4>
+        <p id="heroEulogy1">PEPE was held briefly, sold prematurely, and never spoken of again.</p>
+        <p id="heroEulogy2" data-i18n="survivedBy">Survived by: a single screenshot, a faint memory of green candles, and the conviction that "it was already up too much." Funeral arrangements were swift and irreversible.</p>
+        <div class="stat-row">
+          <div><div class="label" data-i18n="amountSold">Amount sold</div><div class="val" id="sAmt">420,690,000,000</div></div>
+          <div><div class="label" data-i18n="soldAt">Sold at</div><div class="val" id="sPrice">$0.00000044</div></div>
+          <div><div class="label" data-i18n="received">Received</div><div class="val" id="sReceived">$184.30</div></div>
+          <div><div class="label" data-i18n="sameBagAth">Same bag at ATH</div><div class="val red" id="sAth">$1,284,586</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="others-head" data-i18n="alsoMourned">— Also Mourned in This Edition —</div>
+    <div class="others" id="otherObits"></div>
+
+    <div class="filtered-strip" id="filteredStrip">
+      <b data-i18n="excluded">Excluded from this edition:</b> <span id="filteredList">3 honeypot contracts, 2 rugged tokens, 4 ghost-liquidity assets</span>. <span data-i18n="noFiction">We do not print fictional losses.</span>
+    </div>
+
+    <div class="footer-band">
+      <div>
+        <span data-i18n="footerLeft">© The Paperhand Gazette · Printed for</span> <span id="footAddr">0x…</span><br/>
+        <span data-i18n="footerStack">Built on imToken Token Core · GoPlus security filters · CoinGecko market data.</span>
+      </div>
+      <button class="share-btn" id="shareBtn" data-i18n="share">Share This Obituary</button>
+    </div>
+
+    <div class="report-back">
+      <button id="reportBack" data-i18n="tryAnother">Try another wallet</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- QR modal -->
+<div class="qr-overlay" id="qrOverlay">
+  <div class="qr-card">
+    <button class="close" id="qrClose">×</button>
+    <h4 data-i18n="qrH">Scan with imToken</h4>
+    <p data-i18n="qrP">Open imToken or any mobile wallet's built-in browser and scan this code. Then tap "Read My Obituary".</p>
+    <div id="qrcode"></div>
+    <div class="url-strip" id="qrUrl"></div>
+  </div>
+</div>
+
+<!-- Share-image modal -->
+<div class="share-overlay" id="shareOverlay">
+  <div class="share-card">
+    <button class="close" id="shareClose">×</button>
+    <h4 data-i18n="shareH">Your Obituary, As Image</h4>
+    <p data-i18n="shareP">Long-press / right-click the image to save, or use the buttons below.</p>
+    <img id="shareImg" alt="obituary preview" />
+    <div class="ops">
+      <button id="shareDownload" data-i18n="shareDownload">Download PNG</button>
+      <button id="shareCopy" data-i18n="shareCopy">Copy image</button>
+      <button id="shareNative" data-i18n="shareNative">Share…</button>
+    </div>
+    <div class="hint" id="shareHint" data-i18n="shareHint">Drop it into Twitter / WeChat / Telegram</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   The Paperhand Gazette — front-end demo
+   ------------------------------------------------------------
+   Real bits:
+     · ethers v6 wallet connect (read-only, eth_requestAccounts)
+     · ATH-based loss math
+     · honeypot/rug filter (placeholder list — wire to GoPlus API)
+   Mocked bits (clearly marked MOCK):
+     · trade history — to be replaced with Etherscan tokentx scan
+     · price-at-sell + ATH — to be replaced with CoinGecko ranges
+   ============================================================ */
+
+const $ = (q)=>document.querySelector(q);
+const $$= (q)=>document.querySelectorAll(q);
+
+/* ============== I18N ============== */
+const LANG = {
+  en: {
+    price:'Price: One Bag of Regret',
+    title:'The Paperhand Gazette',
+    tagline:'— All the losses fit to print —',
+    edition:'Late Edition · On-Chain Bureau',
+    subtitle:'Obituaries for the coins you sold too early',
+    poweredBy:'Honeypot-Filtered · Powered by Token Core',
+    heroH:'Every wallet has itsghosts.<br/>Yours is about to speak.',
+    heroP:'Connect a read-only wallet and we will exhume every token you ever sold, look up where it trades today, and calculate — to the dollar — the bag you dropped. We will write a short obituary for each one. The biggest casualty earns the front page.',
+    pull:'If they had only held a little longer, they would be reading this from a yacht.',
+    safety:'No private keys. No signatures that move funds. Honeypots, rugs and known scam tokens are filtered before any number is printed. We measure regret, not pump-and-dump phantom gains.',
+    stamp:'CONFIDENTIAL', stampS1:'FOR THE BEARER', stampS2:'OF THIS WALLET',
+    sideH:"Today's Issue",
+    sideP:'We will scan up to5 yearsof your Ethereum trading history, cross-reference each token’s all-time high, exclude rugged contracts, and rank your largest unrealized goodbye.',
+    connect:'Read My Obituary →',
+    openMobile:'▸ Open in imToken / mobile wallet',
+    sample:'▸ See a sample edition',
+    fineprint:'Filters:GoPlushoneypot signature, transfer-tax &gt; 10%, blacklist functions, mint authority, low-liquidity ghost tokens.<br/>Sources: Etherscan logs · CoinGecko ATH · imToken Token Core for address resolution.',
+    workKicker:'— Setting type · Pressing tonight’s edition —',
+    workH:'Exhuming the dead bags…',
+    step0:'Reading wallet history from chain',
+    step1:'Identifying every token ever sold',
+    step2:'Filtering honeypots and rugged contracts',
+    step3:'Pulling all-time highs from CoinGecko',
+    step4:'Computing the size of each goodbye',
+    step5:'Composing eulogies',
+    sealLine1:'NO OBITUARIES', sealLine2:'TO PRINT', sealSmall:'CERTIFIED CLEAN HANDS',
+    cleanH:'A Quiet Edition.',
+    cleanP:'This wallet has no recorded paperhands. Either it diamond-handed everything, or it hasn’t sold yet. The Gazette tips its hat.',
+    cleanEmpty:'No ERC-20 history was found for this address. Either it has never traded a token, or it is brand new. The Gazette tips its hat.',
+    cleanFiltered:'Every sold token was either a scam, a honeypot, or has no public market data. Nothing left to mourn — and that, dear reader, is a kind of victory.',
+    tryAnother:'Try another wallet',
+    viewSample:'Read sample edition',
+    frontKicker:'— Front Page · The Largest Goodbye —',
+    couldBeWorth:'Could be worth today',
+    inMemory:'In Loving Memory',
+    survivedBy:'Survived by: a single screenshot, a faint memory of green candles, and the conviction that "it was already up too much." Funeral arrangements were swift and irreversible.',
+    amountSold:'Amount sold', soldAt:'Sold at', received:'Received', sameBagAth:'Same bag at ATH',
+    alsoMourned:'— Also Mourned in This Edition —',
+    excluded:'Excluded from this edition:',
+    noFiction:'We do not print fictional losses.',
+    footerLeft:'© The Paperhand Gazette · Printed for',
+    footerStack:'Built on imToken Token Core · GoPlus security filters · CoinGecko market data.',
+    share:'Share This Obituary',
+    qrH:'Scan with imToken',
+    qrP:'Open imToken or any mobile wallet’s built-in browser and scan this code. Then tap "Read My Obituary".',
+    shareH:'Your Obituary, As Image',
+    shareP:'Long-press / right-click the image to save, or use the buttons below.',
+    shareDownload:'Download PNG',
+    shareCopy:'Copy image',
+    shareNative:'Share…',
+    shareHint:'Drop it into Twitter / WeChat / Telegram',
+    shareRendering:'Rendering image…',
+    shareCopied:'Image copied to clipboard',
+    shareCopyFail:'Copy failed — long-press the image to save.',
+    figEight:'An eight-figure farewell.',
+    figSeven:'A seven-figure farewell.',
+    figSix:'A six-figure goodbye.',
+    figFive:'A five-figure regret.',
+    figModest:'A modest, but durable, regret.',
+    farewellTpl:(name, amt)=>`"${name.toUpperCase()}" : ${amt} GONE.`,
+    deckTpl:(kicker, addr)=>`${kicker} The bearer of${addr}said farewell at the wrong hour.`,
+    boughtSold:(b,s)=>`Bought ${b} · Sold ${s}`,
+    athLineTpl:(mult)=>`at all-time-high price · ${mult}× missed`,
+    eulogyJoin:(eulogy, received, peak)=>`${eulogy} The bearer received${received}in exchange for what would peak at${peak}.`,
+    missedLine:(mult)=>`missed · ${mult}× from sell price`,
+    errNoWallet:'No wallet extension detected. On desktop, install MetaMask. On mobile, use the "Open in imToken / mobile wallet" button above.',
+    errGeneric:'Error: ',
+    sampleAddr:'a paperhanded soul'
+  },
+  zh: {
+    price:'售价：一袋懊悔',
+    title:'纸手日报',
+    tagline:'— 所有的卖飞，皆值得记录 —',
+    edition:'晚间版 · 链上纪事',
+    subtitle:'献给那些你卖得太早的币',
+    poweredBy:'已过滤貔貅 · 由 Token Core 驱动',
+    heroH:'每个钱包都有它的亡魂。<br/>你的，正准备开口。',
+    heroP:'连接你的钱包（只读），我们会挖出你卖掉的每一枚代币，查它今天的价格，按美元算出你卖飞了多少。我们会为每一个写一篇短讣告，最大的那笔会登上头版。',
+    pull:'如果他们再多拿一阵子，此刻就该躺在游艇上读这份报纸了。',
+    safety:'不要求私钥，不需要任何资金操作签名。貔貅、跑路盘和已知诈骗代币在计算前已被过滤。我们衡量的是真正的"卖飞"，不是拉高出货的虚假涨幅。',
+    stamp:'机密', stampS1:'仅限', stampS2:'本钱包持有人',
+    sideH:'今日内容',
+    sideP:'我们会扫描你以太坊地址最多 5 年的交易历史，对照每个代币的历史最高价，剔除骗局，给你列出最大的几笔"卖飞"。',
+    connect:'读我的讣告 →',
+    openMobile:'▸ 用 imToken 移动端打开',
+    sample:'▸ 看一份样本',
+    fineprint:'过滤项：GoPlus貔貅特征、卖出税&gt;10%、黑名单函数、可任意铸造、低流动性幽灵代币。<br/>数据来源：Etherscan 链上日志 · CoinGecko 历史最高价 · imToken Token Core 地址解析。',
+    workKicker:'— 排版中 · 今晚的版面正在付印 —',
+    workH:'正在掘出你的"死袋子"……',
+    step0:'读取链上钱包历史',
+    step1:'识别每一枚卖出过的代币',
+    step2:'过滤貔貅和跑路合约',
+    step3:'从 CoinGecko 拉取历史最高价',
+    step4:'计算每一次"再见"的大小',
+    step5:'撰写悼词',
+    sealLine1:'无讣告', sealLine2:'可印', sealSmall:'已认证 · 钻石手',
+    cleanH:'一份安静的版面。',
+    cleanP:'这个钱包没有任何可纪念的"卖飞"。要么是真钻石手，要么是还没动手。本报向你致敬。',
+    cleanEmpty:'此地址没有任何 ERC-20 交易记录。也许是全新地址，也许从未碰过代币。本报向你致敬。',
+    cleanFiltered:'你卖过的所有代币要么是骗局、貔貅，要么市场里查不到价。没什么可哀悼的 —— 亲爱的读者，这也是一种胜利。',
+    tryAnother:'换一个钱包试试',
+    viewSample:'看示例版本',
+    frontKicker:'— 头版 · 最大的一次告别 —',
+    couldBeWorth:'今日身价本可达',
+    inMemory:'谨此悼念',
+    survivedBy:'遗物：一张截图、一段对绿K线的模糊记忆、以及"已经涨太多了"的执念。葬礼匆促，且不可逆。',
+    amountSold:'卖出数量', soldAt:'卖出价', received:'实际拿到', sameBagAth:'同等数量在ATH价值',
+    alsoMourned:'— 本期一并哀悼 —',
+    excluded:'本期未印：',
+    noFiction:'我们不印虚构的亏损。',
+    footerLeft:'© 纸手日报 · 为以下钱包定制：',
+    footerStack:'基于 imToken Token Core · GoPlus 安全过滤 · CoinGecko 市场数据。',
+    share:'分享我的讣告',
+    qrH:'用 imToken 扫码',
+    qrP:'打开 imToken 或任意移动钱包内置的浏览器，扫描下方二维码，然后点"读我的讣告"。',
+    shareH:'把这份讣告存成图片',
+    shareP:'长按 / 右键保存图片，或用下面的按钮。',
+    shareDownload:'下载 PNG',
+    shareCopy:'复制图片',
+    shareNative:'系统分享…',
+    shareHint:'丢到推特 / 微信 / Telegram',
+    shareRendering:'正在生成图片……',
+    shareCopied:'图片已复制到剪贴板',
+    shareCopyFail:'复制失败，请长按图片保存。',
+    figEight:'一笔八位数的告别。',
+    figSeven:'一笔七位数的告别。',
+    figSix:'一笔六位数的再见。',
+    figFive:'一笔五位数的遗憾。',
+    figModest:'一笔不大、但持久的遗憾。',
+    farewellTpl:(name, amt)=>`「${name.toUpperCase()}」：${amt} 灰飞烟灭。`,
+    deckTpl:(kicker, addr)=>`${kicker} 钱包${addr}在错误的时刻说了再见。`,
+    boughtSold:(b,s)=>`买入 ${b} · 卖出 ${s}`,
+    athLineTpl:(mult)=>`按历史最高价 · 卖飞 ${mult} 倍`,
+    eulogyJoin:(eulogy, received, peak)=>`${eulogy} 本钱包当时拿到${received}，而那份持仓在最高点本可值${peak}。`,
+    missedLine:(mult)=>`错过 · 从卖出价起 ${mult} 倍`,
+    errNoWallet:'未检测到钱包扩展。桌面端请安装 MetaMask；手机端请点上方"用 imToken 移动端打开"。',
+    errGeneric:'出错了：',
+    sampleAddr:'一位纸手交易员'
+  }
+};
+let currentLang = (navigator.language||'').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+const t = (k)=> LANG[currentLang][k] ?? LANG.en[k] ?? k;
+
+function applyLang(){
+  document.documentElement.lang = currentLang === 'zh' ? 'zh' : 'en';
+  $$('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(LANG[currentLang][key] != null) el.textContent = LANG[currentLang][key];
+  });
+  $$('[data-i18n-html]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-html');
+    if(LANG[currentLang][key] != null) el.innerHTML = LANG[currentLang][key];
+  });
+  $$('.lang-switch button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.lang === currentLang);
+  });
+}
+$$('.lang-switch button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    currentLang = b.dataset.lang;
+    applyLang();
+  });
+});
+applyLang();
+
+/* --- masthead date / edition --- */
+(function(){
+  const d = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  const locale = currentLang === 'zh' ? 'zh-CN' : 'en-US';
+  $('#todayDate').textContent = d.toLocaleDateString(locale, opts);
+  $('#editionNo').textContent = String(2600 + (d.getDate()*7) % 400).padStart(3,'0');
+})();
+
+/* ============== MOCK DATA (sample edition) ============== */
+const MOCK_TRADES = [
+  {
+    name:'Pepe', ticker:'PEPE', amount:420_690_000_000,
+    boughtAt:'2023-04-14', soldAt:'2023-05-03',
+    soldPrice: 0.00000044,    received: 185.10,
+    athPrice : 0.00001717,   // ATH ~ early 2024
+    eulogy: 'Held three weeks. Sold for the price of a steak dinner. The remaining bag would today buy a small ranch.'
+  },
+  {
+    name:'Solana', ticker:'SOL', amount:480,
+    boughtAt:'2020-10-12', soldAt:'2021-02-11',
+    soldPrice: 9.40,        received: 4512,
+    athPrice : 295.50,
+    eulogy: 'A faithful companion through the bear. Departed for a 4× and never returned home.'
+  },
+  {
+    name:'Shiba Inu', ticker:'SHIB', amount:24_000_000,
+    boughtAt:'2021-04-02', soldAt:'2021-05-01',
+    soldPrice: 0.0000071,   received: 170.40,
+    athPrice : 0.0000868,
+    eulogy: 'Bought as a joke. Sold as a joke. The joke is now on the bearer.'
+  },
+  {
+    name:'Chainlink', ticker:'LINK', amount:1_240,
+    boughtAt:'2019-08-20', soldAt:'2020-04-09',
+    soldPrice: 2.85,        received: 3534,
+    athPrice : 52.70,
+    eulogy: 'Oracle of fortunes. Bearer did not consult it before selling.'
+  },
+  {
+    name:'Render', ticker:'RNDR', amount:3_800,
+    boughtAt:'2022-06-19', soldAt:'2022-12-04',
+    soldPrice: 0.41,        received: 1558,
+    athPrice : 13.45,
+    eulogy: 'Rendered. Then surrendered.'
+  },
+  {
+    name:'Injective', ticker:'INJ', amount:920,
+    boughtAt:'2022-11-22', soldAt:'2023-03-17',
+    soldPrice: 1.94,        received: 1785,
+    athPrice : 53.10,
+    eulogy: 'Injected with conviction. Ejected without ceremony.'
+  }
+];
+
+const MOCK_FILTERED = '4 honeypot contracts (transfer-tax > 50%), 2 rugged tokens (liquidity removed), 3 ghost-liquidity assets';
+
+/* ============== HONEYPOT / RUG FILTER ==============
+   In production: call GoPlus token-security API for each contract address
+   and exclude any with: is_honeypot=1, is_blacklisted, sell_tax>10,
+   cannot_sell_all, owner_can_change_balance, etc.
+   ============================================================ */
+function filterScams(tokens){
+  // placeholder — every token in MOCK_TRADES is curated as legit
+  return { kept: tokens, filtered: MOCK_FILTERED };
+}
+
+/* ============== ANALYSIS ============== */
+function analyseTrades(trades){
+  return trades.map(t=>{
+    const athValue = t.amount * t.athPrice;
+    const lostUSD  = athValue - t.received;
+    const multiple = athValue / Math.max(t.received, 0.01);
+    return { ...t, athValue, lostUSD, multiple };
+  }).sort((a,b)=>b.lostUSD - a.lostUSD);
+}
+
+/* ============== FORMATTERS ============== */
+const fmtUSD = (n)=>{
+  if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if(n>=1e3) return '$'+Math.round(n).toLocaleString();
+  return '$'+n.toFixed(2);
+};
+const fmtUSDFull = (n)=>'$'+Math.round(n).toLocaleString();
+const fmtAmt = (n)=>{
+  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3) return n.toLocaleString();
+  return n.toFixed(n<1?6:2);
+};
+const fmtPx = (n)=>{
+  if(n<0.001) return '$'+n.toExponential(2).replace('e','×10^');
+  if(n<1) return '$'+n.toFixed(6).replace(/0+$/,'');
+  return '$'+n.toFixed(2);
+};
+const fmtDate = (s)=>new Date(s).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+const shortAddr = (a)=> a.slice(0,6)+'…'+a.slice(-4);
+
+/* ============== UI: WORKING ANIMATION ============== */
+async function runWorking(){
+  $('#landing').style.display='none';
+  $('#working').classList.add('active');
+  $('#report').classList.remove('active');
+  const lines = $$('#workLines div');
+  for(let i=0;i<lines.length;i++){
+    await new Promise(r=>setTimeout(r, 550 + Math.random()*350));
+    lines[i].classList.add('on');
+  }
+  await new Promise(r=>setTimeout(r,500));
+  $('#working').classList.remove('active');
+  $('#report').classList.add('active');
+}
+
+/* ============== UI: RENDER REPORT ============== */
+function renderReport(addr, trades, filteredText){
+  const ranked = analyseTrades(trades);
+  const hero   = ranked[0];
+  const others = ranked.slice(1, 7);
+
+  $('#shortAddr').textContent = shortAddr(addr);
+  $('#footAddr').textContent  = shortAddr(addr);
+
+  const heroLoss = hero.lostUSD;
+  let kicker;
+  if(heroLoss>=10_000_000)   kicker=t('figEight');
+  else if(heroLoss>=1_000_000) kicker=t('figSeven');
+  else if(heroLoss>=100_000)   kicker=t('figSix');
+  else if(heroLoss>=10_000)    kicker=t('figFive');
+  else                          kicker=t('figModest');
+
+  $('#frontHeadline').textContent = t('farewellTpl')(hero.name, fmtUSD(heroLoss).toUpperCase());
+  $('#frontDeck').innerHTML = t('deckTpl')(kicker, ` <b>${shortAddr(addr)}</b> `);
+
+  $('#heroName').textContent   = hero.name;
+  $('#heroTicker').textContent = '$'+hero.ticker;
+  $('#heroDates').textContent  = t('boughtSold')(fmtDate(hero.boughtAt), fmtDate(hero.soldAt));
+  $('#heroLoss').textContent   = fmtUSDFull(hero.athValue);
+  $('#heroLossSub').textContent= t('athLineTpl')(hero.multiple.toFixed(0));
+
+  $('#heroEulogy1').innerHTML = t('eulogyJoin')(hero.eulogy, ` <b>${fmtUSDFull(hero.received)}</b> `, ` <b>${fmtUSDFull(hero.athValue)}</b> `);
+  $('#heroEulogy2').textContent = t('survivedBy');
+
+  $('#sAmt').textContent      = fmtAmt(hero.amount)+' '+hero.ticker;
+  $('#sPrice').textContent    = fmtPx(hero.soldPrice);
+  $('#sReceived').textContent = fmtUSDFull(hero.received);
+  $('#sAth').textContent      = fmtUSDFull(hero.athValue);
+
+  const grid = $('#otherObits'); grid.innerHTML='';
+  others.forEach(o=>{
+    const div = document.createElement('div');
+    div.className = 'obit-card';
+    div.innerHTML = `
+      <div class="ticker">$${o.ticker}</div>
+      <h5>${o.name}</h5>
+      <div class="span">${fmtDate(o.boughtAt)} – ${fmtDate(o.soldAt)}</div>
+      <div class="lost">${fmtUSD(o.lostUSD)}</div>
+      <div class="lost-detail">${t('missedLine')(o.multiple.toFixed(0))}</div>
+      <div class="quote">${o.eulogy}</div>`;
+    grid.appendChild(div);
+  });
+
+  $('#filteredList').textContent = filteredText;
+}
+
+/* Show clean-hands edition for empty / fully-filtered wallets */
+function showClean(addr, reasonKey){
+  $('#landing').style.display='none';
+  $('#working').classList.remove('active');
+  $('#report').classList.remove('active');
+  $('#cleanReason').textContent = t(reasonKey || 'cleanP');
+  $('#cleanAddr').textContent = shortAddr(addr);
+  $('#clean').classList.add('active');
+}
+function backToLanding(){
+  $('#clean').classList.remove('active');
+  $('#working').classList.remove('active');
+  $('#report').classList.remove('active');
+  $('#shareOverlay').classList.remove('active');
+  $('#qrOverlay').classList.remove('active');
+  $('#landing').style.display='grid';
+  $('#errMsg').textContent='';
+  $$('#workLines div').forEach(d=>d.classList.remove('on'));
+  window.scrollTo({ top:0, behavior:'instant' });
+}
+
+/* ============== REAL API INTEGRATION ============== */
+// Keys live on the server side (Vercel env vars). Frontend just hits /api/*
+
+// Fetch ERC20 transfers (Etherscan via our proxy)
+async function fetchTransfers(addr){
+  const res = await fetch(`/api/transfers?addr=${addr}`);
+  if(!res.ok) throw new Error('transfer fetch failed');
+  const data = await res.json();
+  // status='0' with message 'No transactions found' is a normal empty wallet, not an error
+  if(data.status !== '1'){
+    if((data.message||'').toLowerCase().includes('no transactions')) return [];
+    throw new Error(data.message || 'Etherscan API error');
+  }
+  return data.result || [];
+}
+
+// Identify sold tokens (outgoing transfers)
+function extractSoldTokens(transfers, walletAddr){
+  const sold = {};
+  transfers.forEach(tx => {
+    const isOut = tx.from.toLowerCase() === walletAddr.toLowerCase();
+    if(!isOut) return;
+    const addr = tx.contractAddress.toLowerCase();
+    const amt = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal));
+    if(!sold[addr]) sold[addr] = {
+      address: addr,
+      symbol: tx.tokenSymbol,
+      name: tx.tokenName,
+      soldAmount: 0,
+      firstSeen: tx.timeStamp,
+      lastSold: tx.timeStamp
+    };
+    sold[addr].soldAmount += amt;
+    sold[addr].lastSold = tx.timeStamp;
+  });
+  return Object.values(sold).filter(t => t.soldAmount > 0);
+}
+
+// GoPlus honeypot check (via our proxy)
+async function checkHoneypot(contractAddr){
+  try{
+    const res = await fetch(`/api/goplus?addr=${contractAddr}`);
+    if(!res.ok) return { isScam: false };
+    const data = await res.json();
+    const info = data.result?.[contractAddr.toLowerCase()];
+    if(!info) return { isScam: false, reason: 'unknown' };
+
+    if(info.is_honeypot === '1') return { isScam: true, reason: 'honeypot' };
+    if(info.is_blacklisted === '1') return { isScam: true, reason: 'blacklisted' };
+    if(parseFloat(info.sell_tax || 0) > 0.1) return { isScam: true, reason: 'high sell tax' };
+    if(info.cannot_sell_all === '1') return { isScam: true, reason: 'cannot sell' };
+    if(info.is_open_source === '0') return { isScam: true, reason: 'not open source' };
+
+    return { isScam: false };
+  }catch(e){
+    console.warn('GoPlus check failed:', e);
+    return { isScam: false };
+  }
+}
+
+// CoinGecko: get coin ID from contract address (via proxy)
+async function getCoinId(contractAddr){
+  try{
+    const res = await fetch(`/api/coingecko?path=coins/ethereum/contract/${contractAddr}`);
+    if(!res.ok) return null;
+    const data = await res.json();
+    return data.id || null;
+  }catch(e){
+    return null;
+  }
+}
+
+// CoinGecko: get current price + ATH (via proxy)
+async function getCoinData(coinId){
+  try{
+    const res = await fetch(`/api/coingecko?path=coins/${coinId}&localization=false&tickers=false&community_data=false&developer_data=false`);
+    if(!res.ok) return null;
+    const data = await res.json();
+    return {
+      currentPrice: data.market_data?.current_price?.usd || 0,
+      ath: data.market_data?.ath?.usd || 0,
+      athDate: data.market_data?.ath_date?.usd || null
+    };
+  }catch(e){
+    return null;
+  }
+}
+
+// Historical price on a given date (DD-MM-YYYY)
+async function getHistoricalPrice(coinId, ymd){
+  try{
+    const [y,m,d] = ymd.split('-');
+    const date = `${d}-${m}-${y}`;
+    const res = await fetch(`/api/coingecko?path=coins/${coinId}/history&date=${date}&localization=false`);
+    if(!res.ok) return 0;
+    const data = await res.json();
+    return data.market_data?.current_price?.usd || 0;
+  }catch(e){
+    return 0;
+  }
+}
+
+// Main analysis pipeline
+async function analyzeWallet(addr){
+  const lines = $$('#workLines div');
+
+  lines[0].classList.add('on');
+  const transfers = await fetchTransfers(addr);
+  await new Promise(r=>setTimeout(r,300));
+
+  lines[1].classList.add('on');
+  const soldTokens = extractSoldTokens(transfers, addr);
+  await new Promise(r=>setTimeout(r,300));
+
+  lines[2].classList.add('on');
+  const filtered = [];
+  const kept = [];
+  // Pre-filter: only check tokens with meaningful sold amount, cap at 20 to stay polite to APIs
+  const candidates = soldTokens.slice(0, 20);
+  for(const token of candidates){
+    const check = await checkHoneypot(token.address);
+    if(check.isScam){
+      filtered.push(`${token.symbol} (${check.reason})`);
+    }else{
+      kept.push(token);
+    }
+  }
+  await new Promise(r=>setTimeout(r,300));
+
+  lines[3].classList.add('on');
+  const enriched = [];
+  for(const token of kept){
+    const coinId = await getCoinId(token.address);
+    if(!coinId){ filtered.push(`${token.symbol} (not on CoinGecko)`); continue; }
+    const coinData = await getCoinData(coinId);
+    if(!coinData || coinData.ath === 0){ filtered.push(`${token.symbol} (no ATH)`); continue; }
+
+    const soldDate = new Date(token.lastSold * 1000).toISOString().split('T')[0];
+    const buyDate  = new Date(token.firstSeen * 1000).toISOString().split('T')[0];
+    const soldPrice = await getHistoricalPrice(coinId, soldDate) || coinData.currentPrice;
+
+    enriched.push({
+      name: token.name,
+      ticker: token.symbol,
+      amount: token.soldAmount,
+      soldAt: soldDate,
+      boughtAt: buyDate,
+      soldPrice,
+      athPrice: coinData.ath,
+      received: token.soldAmount * soldPrice,
+      eulogy: `Sold at ${fmtPx(soldPrice)}. Peak was ${fmtPx(coinData.ath)} — ${(coinData.ath/Math.max(soldPrice,1e-12)).toFixed(0)}× higher.`
+    });
+    await new Promise(r=>setTimeout(r,150));
+  }
+  await new Promise(r=>setTimeout(r,300));
+
+  lines[4].classList.add('on');
+  await new Promise(r=>setTimeout(r,400));
+  lines[5].classList.add('on');
+  await new Promise(r=>setTimeout(r,300));
+
+  const filteredText = filtered.length
+    ? filtered.slice(0,6).join(', ') + (filtered.length > 6 ? ` and ${filtered.length-6} more` : '')
+    : 'No scam tokens detected';
+
+  return { trades: enriched, filteredText, transfersCount: transfers.length };
+}
+
+/* ============== WALLET CONNECT ============== */
+// Wait until a wallet provider has had a chance to inject `window.ethereum`.
+// Some wallets (imToken, Coinbase, Rabby, multi-provider setups) inject
+// asynchronously, so a button click on first paint can race ahead and see
+// nothing. We listen to the EIP-1193 'ethereum#initialized' signal, the
+// EIP-6963 announceProvider, and additionally poll for up to ~3.5s.
+function waitForEthereum(timeoutMs = 3500){
+  return new Promise(resolve => {
+    if(window.ethereum) return resolve(window.ethereum);
+    let done = false;
+    const finish = (val)=>{ if(done) return; done = true; cleanup(); resolve(val); };
+    const onInit = ()=> finish(window.ethereum || null);
+    const onAnnounce = (e)=>{
+      const p = e?.detail?.provider;
+      if(p && !window.ethereum) window.ethereum = p;
+      finish(window.ethereum || p || null);
+    };
+    function cleanup(){
+      window.removeEventListener('ethereum#initialized', onInit);
+      window.removeEventListener('eip6963:announceProvider', onAnnounce);
+      clearInterval(poll);
+      clearTimeout(to);
+    }
+    window.addEventListener('ethereum#initialized', onInit, { once: true });
+    window.addEventListener('eip6963:announceProvider', onAnnounce);
+    // EIP-6963 — ask any wallet to identify itself.
+    try{ window.dispatchEvent(new Event('eip6963:requestProvider')); }catch{}
+    const poll = setInterval(()=>{ if(window.ethereum) finish(window.ethereum); }, 120);
+    const to = setTimeout(()=> finish(window.ethereum || null), timeoutMs);
+  });
+}
+
+async function connectWallet(){
+  $('#errMsg').textContent='';
+  const btn = $('#connectBtn'); const oldLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  const provider = await waitForEthereum();
+  btn.disabled = false; btn.textContent = oldLabel;
+  if(!provider){
+    $('#errMsg').textContent = t('errNoWallet');
+    return;
+  }
+  try{
+    const ep = new ethers.BrowserProvider(provider);
+    const accounts = await ep.send('eth_requestAccounts', []);
+    const addr = accounts[0];
+
+    $('#landing').style.display='none';
+    $('#working').classList.add('active');
+
+    const { trades, filteredText, transfersCount } = await analyzeWallet(addr);
+
+    $('#working').classList.remove('active');
+
+    if(transfersCount === 0){
+      showClean(addr, 'cleanEmpty');
+      return;
+    }
+    if(trades.length === 0){
+      showClean(addr, 'cleanFiltered');
+      return;
+    }
+
+    $('#report').classList.add('active');
+    renderReport(addr, trades, filteredText);
+  }catch(e){
+    console.error(e);
+    $('#errMsg').textContent = t('errGeneric') + (e.shortMessage || e.message || e);
+    $('#working').classList.remove('active');
+    $('#landing').style.display='grid';
+  }
+}
+
+/* ============== QR MODAL ============== */
+function showQR(){
+  const url = location.href.split('?')[0].split('#')[0];
+  $('#qrUrl').textContent = url;
+  const box = $('#qrcode');
+  box.innerHTML = '';
+  if(window.QRCode){
+    new QRCode(box, { text: url, width: 240, height: 240, colorDark:'#15110c', colorLight:'#ffffff' });
+  }else{
+    box.textContent = url;
+  }
+  $('#qrOverlay').classList.add('active');
+}
+function hideQR(){ $('#qrOverlay').classList.remove('active'); }
+
+/* ============== SAMPLE EDITION (no wallet) ============== */
+async function showSample(){
+  await runWorking();
+  const { kept, filtered } = filterScams(MOCK_TRADES);
+  renderReport('0xDEADb33fCAFE0000000000000000000000c0FFEE', kept, filtered);
+}
+
+/* ============== SHARE AS IMAGE ============== */
+let lastShareBlob = null;
+
+async function renderShareImage(){
+  // Capture the entire report sheet as an image.
+  // We freeze a copy of the relevant DOM so the live page is not affected.
+  const target = document.querySelector('.sheet');
+  const opts = {
+    backgroundColor: '#f1e7d0',
+    scale: Math.min(window.devicePixelRatio || 1, 2),
+    useCORS: true,
+    logging: false,
+    // skip the language switch overlay
+    ignoreElements: (el)=> el.classList && (el.classList.contains('lang-switch') || el.classList.contains('report-back'))
+  };
+  const canvas = await html2canvas(target, opts);
+  const dataUrl = canvas.toDataURL('image/png');
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  return { dataUrl, blob };
+}
+
+async function shareEdition(){
+  const overlay = $('#shareOverlay');
+  const img = $('#shareImg');
+  const hint = $('#shareHint');
+  hint.textContent = t('shareRendering');
+  img.removeAttribute('src');
+  overlay.classList.add('active');
+  try{
+    const { dataUrl, blob } = await renderShareImage();
+    img.src = dataUrl;
+    lastShareBlob = blob;
+    hint.textContent = t('shareHint');
+  }catch(e){
+    console.error(e);
+    hint.textContent = (e.message || 'render failed');
+  }
+}
+
+function downloadShareImage(){
+  if(!lastShareBlob) return;
+  const url = URL.createObjectURL(lastShareBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0,10);
+  a.download = `paperhand-gazette-${stamp}.png`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function copyShareImage(){
+  const hint = $('#shareHint');
+  if(!lastShareBlob){ hint.textContent = t('shareCopyFail'); return; }
+  try{
+    if(!navigator.clipboard || !window.ClipboardItem) throw new Error('no clipboard');
+    await navigator.clipboard.write([ new ClipboardItem({ 'image/png': lastShareBlob }) ]);
+    hint.textContent = t('shareCopied');
+  }catch(e){
+    hint.textContent = t('shareCopyFail');
+  }
+}
+
+async function nativeShareImage(){
+  if(!lastShareBlob) return;
+  const file = new File([lastShareBlob], 'paperhand-gazette.png', { type: 'image/png' });
+  const data = { files:[file], title:'The Paperhand Gazette', text: $('#frontHeadline').textContent };
+  if(navigator.canShare && navigator.canShare(data)){
+    try{ await navigator.share(data); }catch{}
+  }else{
+    downloadShareImage();
+  }
+}
+
+function hideShare(){ $('#shareOverlay').classList.remove('active'); }
+
+$('#connectBtn').addEventListener('click', connectWallet);
+$('#demoBtn'   ).addEventListener('click', showSample);
+$('#shareBtn'  ).addEventListener('click', shareEdition);
+$('#qrBtn'     ).addEventListener('click', showQR);
+$('#qrClose'   ).addEventListener('click', hideQR);
+$('#qrOverlay' ).addEventListener('click', (e)=>{ if(e.target.id==='qrOverlay') hideQR(); });
+$('#cleanBack' ).addEventListener('click', backToLanding);
+$('#cleanSample').addEventListener('click', async ()=>{
+  $('#clean').classList.remove('active');
+  await showSample();
+});
+$('#reportBack').addEventListener('click', backToLanding);
+$('#shareClose').addEventListener('click', hideShare);
+$('#shareOverlay').addEventListener('click', (e)=>{ if(e.target.id==='shareOverlay') hideShare(); });
+$('#shareDownload').addEventListener('click', downloadShareImage);
+$('#shareCopy'   ).addEventListener('click', copyShareImage);
+$('#shareNative' ).addEventListener('click', nativeShareImage);
+</script>
+</body>
+</html>
