@@ -532,7 +532,7 @@
     <aside class="sidebar">
       <div class="stamp"><span data-i18n="stamp">CONFIDENTIAL</span><small data-i18n="stampS1">FOR THE BEARER</small><small data-i18n="stampS2">OF THIS WALLET</small></div>
       <h3 data-i18n="sideH">Today's Issue</h3>
-      <p style="font-size:15px;margin-top:0" data-i18n-html="sideP">We will scan up to <b>5 years</b> of your Ethereum trading history, cross-reference each token's all-time high, exclude rugged contracts, and rank your largest unrealized goodbye.</p>
+      <p style="font-size:15px;margin-top:0" data-i18n-html="sideP">We will scan up to <b>5 years</b> of your Ethereum trading history, find the peak price <i>after each buy</i>, exclude rugged contracts, and rank your largest unrealized goodbye.</p>
       <button class="connect-btn" id="connectBtn" data-i18n="connect">Read My Obituary →</button>
       <button class="alt-btn" id="qrBtn" data-i18n="openMobile">▸ Open in imToken / mobile wallet</button>
       <button class="demo-btn" id="demoBtn" data-i18n="sample">▸ See a sample edition</button>
@@ -552,7 +552,7 @@
       <div data-step="0"><span data-i18n="step0">Reading wallet history from chain</span></div>
       <div data-step="1"><span data-i18n="step1">Identifying every token ever sold</span></div>
       <div data-step="2"><span data-i18n="step2">Filtering honeypots and rugged contracts</span></div>
-      <div data-step="3"><span data-i18n="step3">Pulling all-time highs from CoinGecko</span></div>
+      <div data-step="3"><span data-i18n="step3">Pulling peak prices since buy from CoinGecko</span></div>
       <div data-step="4"><span data-i18n="step4">Computing the size of each goodbye</span></div>
       <div data-step="5"><span data-i18n="step5">Composing eulogies</span></div>
     </div>
@@ -587,7 +587,7 @@
         <div class="dates" id="heroDates">Bought 14 Apr 2023 · Sold 03 May 2023</div>
         <div class="lost-label" data-i18n="couldBeWorth">Could be worth today</div>
         <div class="lost-amount" id="heroLoss">$1,284,402</div>
-        <div class="lost-sub" id="heroLossSub">at all-time-high price · 218,000× missed</div>
+        <div class="lost-sub" id="heroLossSub">at peak-since-buy price · 218,000× missed</div>
       </div>
       <div class="eulogy">
         <h4 data-i18n="inMemory">In Loving Memory</h4>
@@ -674,7 +674,7 @@
 
       <div class="stat-grid">
         <div><div class="stat-label" id="sc_l1">Sold at</div><div class="stat-val" id="sc_v1">$0.00000044</div></div>
-        <div><div class="stat-label" id="sc_l2">Peak (ATH)</div><div class="stat-val red" id="sc_v2">$0.00001717</div></div>
+        <div><div class="stat-label" id="sc_l2">Peak since buy</div><div class="stat-val red" id="sc_v2">$0.00001717</div></div>
         <div><div class="stat-label" id="sc_l3">Received</div><div class="stat-val" id="sc_v3">$185</div></div>
         <div><div class="stat-label" id="sc_l4">Same bag at ATH</div><div class="stat-val red" id="sc_v4">$1,284,586</div></div>
       </div>
@@ -740,7 +740,7 @@ const LANG = {
     safety:'No private keys. No signatures that move funds. Honeypots, rugs and known scam tokens are filtered before any number is printed. We measure regret, not pump-and-dump phantom gains.',
     stamp:'CONFIDENTIAL', stampS1:'FOR THE BEARER', stampS2:'OF THIS WALLET',
     sideH:"Today's Issue",
-    sideP:'We will scan up to5 yearsof your Ethereum trading history, cross-reference each token’s all-time high, exclude rugged contracts, and rank your largest unrealized goodbye.',
+    sideP:'We will scan up to5 yearsof your Ethereum trading history, find the peakafter each buy, exclude rugged contracts, and rank your largest unrealized goodbye.',
     connect:'Read My Obituary →',
     openMobile:'▸ Open in imToken / mobile wallet',
     sample:'▸ See a sample edition',
@@ -750,7 +750,7 @@ const LANG = {
     step0:'Reading wallet history from chain',
     step1:'Identifying every token ever sold',
     step2:'Filtering honeypots and rugged contracts',
-    step3:'Pulling all-time highs from CoinGecko',
+    step3:'Pulling peak prices since buy from CoinGecko',
     step4:'Computing the size of each goodbye',
     step5:'Composing eulogies',
     sealLine1:'NO OBITUARIES', sealLine2:'TO PRINT', sealSmall:'CERTIFIED CLEAN HANDS',
@@ -764,7 +764,7 @@ const LANG = {
     couldBeWorth:'Could be worth today',
     inMemory:'In Loving Memory',
     survivedBy:'Survived by: a single screenshot, a faint memory of green candles, and the conviction that "it was already up too much." Funeral arrangements were swift and irreversible.',
-    amountSold:'Amount sold', soldAt:'Sold at', received:'Received', sameBagAth:'Same bag at ATH',
+    amountSold:'Amount sold', soldAt:'Sold at', received:'Received', sameBagAth:'Same bag at peak',
     alsoMourned:'— Also Mourned in This Edition —',
     excluded:'Excluded from this edition:',
     noFiction:'We do not print fictional losses.',
@@ -797,7 +797,7 @@ const LANG = {
     farewellTpl:(name, amt)=>`"${name.toUpperCase()}" : ${amt} GONE.`,
     deckTpl:(kicker, addr)=>`${kicker} The bearer of${addr}said farewell at the wrong hour.`,
     boughtSold:(b,s)=>`Bought ${b} · Sold ${s}`,
-    athLineTpl:(mult)=>`at all-time-high price · ${mult}× missed`,
+    athLineTpl:(mult)=>`at peak-since-buy price · ${mult}× missed`,
     eulogyJoin:(eulogy, received, peak)=>`${eulogy} The bearer received${received}in exchange for what would peak at${peak}.`,
     missedLine:(mult)=>`missed · ${mult}× from sell price`,
     errNoWallet:'No wallet extension detected. On desktop, install MetaMask. On mobile, use the "Open in imToken / mobile wallet" button above.',
@@ -817,7 +817,7 @@ const LANG = {
     safety:'不要求私钥，不需要任何资金操作签名。貔貅、跑路盘和已知诈骗代币在计算前已被过滤。我们衡量的是真正的"卖飞"，不是拉高出货的虚假涨幅。',
     stamp:'机密', stampS1:'仅限', stampS2:'本钱包持有人',
     sideH:'今日内容',
-    sideP:'我们会扫描你以太坊地址最多 5 年的交易历史，对照每个代币的历史最高价，剔除骗局，给你列出最大的几笔"卖飞"。',
+    sideP:'我们会扫描你以太坊地址最多 5 年的交易历史，找出每个代币「买入之后」的最高价，剔除骗局，给你列出最大的几笔"卖飞"。',
     connect:'读我的讣告 →',
     openMobile:'▸ 用 imToken 移动端打开',
     sample:'▸ 看一份样本',
@@ -827,7 +827,7 @@ const LANG = {
     step0:'读取链上钱包历史',
     step1:'识别每一枚卖出过的代币',
     step2:'过滤貔貅和跑路合约',
-    step3:'从 CoinGecko 拉取历史最高价',
+    step3:'从 CoinGecko 拉取「买入后峰值」价格',
     step4:'计算每一次"再见"的大小',
     step5:'撰写悼词',
     sealLine1:'无讣告', sealLine2:'可印', sealSmall:'已认证 · 钻石手',
@@ -841,7 +841,7 @@ const LANG = {
     couldBeWorth:'今日身价本可达',
     inMemory:'谨此悼念',
     survivedBy:'遗物：一张截图、一段对绿K线的模糊记忆、以及"已经涨太多了"的执念。葬礼匆促，且不可逆。',
-    amountSold:'卖出数量', soldAt:'卖出价', received:'实际拿到', sameBagAth:'同等数量在ATH价值',
+    amountSold:'卖出数量', soldAt:'卖出价', received:'实际拿到', sameBagAth:'同等数量在峰值价值',
     alsoMourned:'— 本期一并哀悼 —',
     excluded:'本期未印：',
     noFiction:'我们不印虚构的亏损。',
@@ -874,7 +874,7 @@ const LANG = {
     farewellTpl:(name, amt)=>`「${name.toUpperCase()}」：${amt} 灰飞烟灭。`,
     deckTpl:(kicker, addr)=>`${kicker} 钱包${addr}在错误的时刻说了再见。`,
     boughtSold:(b,s)=>`买入 ${b} · 卖出 ${s}`,
-    athLineTpl:(mult)=>`按历史最高价 · 卖飞 ${mult} 倍`,
+    athLineTpl:(mult)=>`按买入后峰值 · 卖飞 ${mult} 倍`,
     eulogyJoin:(eulogy, received, peak)=>`${eulogy} 本钱包当时拿到${received}，而那份持仓在最高点本可值${peak}。`,
     missedLine:(mult)=>`错过 · 从卖出价起 ${mult} 倍`,
     errNoWallet:'未检测到钱包扩展。桌面端请安装 MetaMask；手机端请点上方"用 imToken 移动端打开"。',
@@ -1326,6 +1326,28 @@ async function getCoinData(coinId){
   }
 }
 
+// Peak price between buyTs (unix s) and now, scanning market_chart/range.
+// Falls back to lifetime ATH if the range call fails or comes back empty.
+async function getPeakSinceBuy(coinId, buyTs, fallbackAth){
+  try{
+    const now = Math.floor(Date.now() / 1000);
+    if(!buyTs || buyTs >= now) return { peak: fallbackAth, peakDate: null };
+    const res = await fetch(`/api/coingecko?path=coins/${coinId}/market_chart/range&vs_currency=usd&from=${buyTs}&to=${now}`);
+    if(!res.ok) return { peak: fallbackAth, peakDate: null };
+    const data = await res.json();
+    const prices = Array.isArray(data?.prices) ? data.prices : [];
+    if(!prices.length) return { peak: fallbackAth, peakDate: null };
+    let peak = 0, peakTs = 0;
+    for(const [ts, p] of prices){
+      if(typeof p === 'number' && p > peak){ peak = p; peakTs = ts; }
+    }
+    if(peak <= 0) return { peak: fallbackAth, peakDate: null };
+    return { peak, peakDate: new Date(peakTs).toISOString().split('T')[0] };
+  }catch{
+    return { peak: fallbackAth, peakDate: null };
+  }
+}
+
 // Historical price on a given date (DD-MM-YYYY)
 async function getHistoricalPrice(coinId, ymd){
   try{
@@ -1379,16 +1401,28 @@ async function analyzeWallet(addr){
     const buyDate  = new Date(token.firstSeen * 1000).toISOString().split('T')[0];
     const soldPrice = await getHistoricalPrice(coinId, soldDate) || coinData.currentPrice;
 
+    // Peak after buy: the actual missed-opportunity price for *this* trader.
+    // Falls back to lifetime ATH if range fetch fails.
+    const { peak, peakDate } = await getPeakSinceBuy(coinId, token.firstSeen, coinData.ath);
+    // If user bought *at* the peak (or after it), there's no real paperhand
+    // story for this token — drop it.
+    if(peak <= soldPrice * 1.01){
+      filtered.push(`${token.symbol} (no peak after buy)`);
+      await new Promise(r=>setTimeout(r,120));
+      continue;
+    }
+
     enriched.push({
       name: token.name,
       ticker: token.symbol,
       amount: token.soldAmount,
       soldAt: soldDate,
       boughtAt: buyDate,
+      peakAt: peakDate,
       soldPrice,
-      athPrice: coinData.ath,
+      athPrice: peak,
       received: token.soldAmount * soldPrice,
-      eulogy: `Sold at ${fmtPx(soldPrice)}. Peak was ${fmtPx(coinData.ath)} — ${(coinData.ath/Math.max(soldPrice,1e-12)).toFixed(0)}× higher.`
+      eulogy: `Sold at ${fmtPx(soldPrice)}. Peak after buy was ${fmtPx(peak)} — ${(peak/Math.max(soldPrice,1e-12)).toFixed(0)}× higher.`
     });
     await new Promise(r=>setTimeout(r,150));
   }
@@ -1647,7 +1681,7 @@ function populateShareCard(){
 
   $('#sc_l1').textContent = t('soldAt');
   $('#sc_v1').textContent = fmtPx(hero.soldPrice);
-  $('#sc_l2').textContent = isZh ? '历史最高价' : 'Peak (ATH)';
+  $('#sc_l2').textContent = isZh ? '买入后峰值' : 'Peak since buy';
   $('#sc_v2').textContent = fmtPx(hero.athPrice);
   $('#sc_l3').textContent = t('received');
   $('#sc_v3').textContent = fmtUSDFull(hero.received);

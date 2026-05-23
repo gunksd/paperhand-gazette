@@ -14,8 +14,8 @@
 2. Pull every ERC-20 transfer for that address from Etherscan v2.
 3. Identify real **buy → sell-to-DEX** events per token (see Detection logic below). Wallet-to-wallet transfers, bridges, deposits and stablecoins are excluded.
 4. Run each surviving token through GoPlus token-security to drop honeypots, blacklisted, high sell-tax, non-sellable, and closed-source contracts.
-5. Look up each survivor on CoinGecko: ATH price + historical sell-day price.
-6. Compute `lostUSD = soldAmount × athPrice − received` and rank.
+5. For each survivor, fetch its **peak price *after the first buy*** from CoinGecko `market_chart/range` (falls back to lifetime ATH on failure). Tokens whose peak-since-buy is ≤ the sell price are dropped — no real paperhand story there.
+6. Compute `lostUSD = soldAmount × peakSinceBuy − received` and rank.
 7. Render the front page as a Victorian-newspaper obituary, with sub-obits for the runners-up.
 
 Special editions:
@@ -43,7 +43,7 @@ This catches real DEX sells across Uniswap-style AMMs without maintaining an exh
 | Backend | Vercel serverless functions (`/api/*`) | Hides API keys; adds CDN cache (`s-maxage`). |
 | Wallet | EIP-1193 + EIP-6963 + async-injection wait + `wallet_requestPermissions` for re-prompt | imToken/Coinbase/Rabby inject `window.ethereum` asynchronously; first-paint button clicks were racing. |
 | Chain data | Etherscan v2 multichain (`chainid=1`, newest 10k tokentx) | Free, covers full ERC-20 history within the serverless budget. |
-| Prices | CoinGecko free API + Demo key | ATH and historical price (`/coins/{id}/history?date=DD-MM-YYYY`). |
+| Prices | CoinGecko free API + Demo key | Lifetime ATH, sell-day historical price, and `market_chart/range` for peak-since-buy. |
 | Security | GoPlus `token_security/1` | Free honeypot/scam classifier. |
 | Sharing | html2canvas → PNG, fixed 1080×1350 off-screen card | gmgn-style dark card with masked address (`0xab12…cd34`) and QR; download / clipboard / `navigator.share`. |
 | i18n | Vanilla `data-i18n` + `LANG` dictionary | EN / 中文. |
@@ -116,8 +116,8 @@ Token Core is imToken's wallet engine. It normalises wallet behaviour across mob
 
 ## Caveats
 
-- We use *lifetime* ATH, not peak-after-sell. So a token that already ATH'd before you sold will still print a number; sometimes the "loss" is small or negative and falls below tokens you genuinely paperhanded.
-- "Lost" is the USD that bag would be at ATH today minus what you received — fictional in the sense that nobody sells at the exact top. The Gazette is honest about that on the landing page.
+- "Peak" is the *maximum daily-resolution price since the first buy* per token, from CoinGecko `market_chart/range`. If that call fails or returns empty, we fall back to lifetime ATH. Either way it is the *opportunity* price, not a fill price — nobody sells at the exact top.
+- "Lost" is the USD that bag would be worth at the peak-since-buy minus what you received. Fictional in the sense that nobody actually catches the top. The Gazette is honest about that on the landing page.
 - Etherscan returns at most 10,000 most-recent ERC-20 transfers per request. For very active wallets older history is truncated.
 - Detection is heuristic-based — it does not parse swap logs at the contract level. The cross-token same-tx heuristic is robust for AMM swaps but may miss exotic flows (e.g. multi-hop trades that route through your wallet, fee rebates).
 
