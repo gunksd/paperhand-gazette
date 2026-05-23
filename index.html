@@ -288,6 +288,16 @@
   .lang-switch button{background:transparent;border:none;padding:6px 12px;cursor:pointer;color:var(--ink-soft);font-family:inherit;font-size:inherit;letter-spacing:inherit}
   .lang-switch button.on{background:var(--ink);color:var(--paper)}
 
+  /* wallet badge */
+  .wallet-badge{position:fixed;top:46px;right:18px;z-index:10;display:none;align-items:center;gap:0;border:1px solid var(--rule);background:var(--paper);font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.08em;box-shadow:2px 2px 0 var(--blood);}
+  .wallet-badge.on{display:flex}
+  .wallet-badge .dot{width:8px;height:8px;border-radius:50%;background:#2a8a3a;margin:0 8px;box-shadow:0 0 0 2px rgba(42,138,58,0.18)}
+  .wallet-badge .addr{padding:6px 10px 6px 0;color:var(--ink);cursor:pointer;user-select:all;}
+  .wallet-badge .addr:hover{color:var(--blood)}
+  .wallet-badge .sep{width:1px;align-self:stretch;background:var(--rule)}
+  .wallet-badge .disc{background:transparent;border:none;padding:6px 10px;cursor:pointer;color:var(--ink-soft);font-family:inherit;font-size:inherit;letter-spacing:inherit;text-transform:uppercase}
+  .wallet-badge .disc:hover{color:var(--blood)}
+
   /* clean-hands edition */
   .clean{display:none;text-align:center;padding:60px 20px 30px;}
   .clean.active{display:block}
@@ -409,6 +419,13 @@
 <div class="lang-switch">
   <button data-lang="en" class="on">EN</button>
   <button data-lang="zh">中文</button>
+</div>
+
+<div class="wallet-badge" id="walletBadge">
+  <span class="dot" title="connected"></span>
+  <span class="addr" id="walletAddr" title="click to copy">0x…</span>
+  <span class="sep"></span>
+  <button class="disc" id="walletDisc" data-i18n="disconnect">Disconnect</button>
 </div>
 
 <main class="sheet">
@@ -696,6 +713,8 @@ const LANG = {
     rejectTitle:'Connection Refused',
     rejectBody:'The bearer declined to open their wallet to our reporters. The Gazette respects their privacy. Try again whenever you are ready.',
     rejectOk:'OK',
+    disconnect:'Disconnect',
+    addrCopied:'Address copied',
     figEight:'An eight-figure farewell.',
     figSeven:'A seven-figure farewell.',
     figSix:'A six-figure goodbye.',
@@ -770,6 +789,8 @@ const LANG = {
     rejectTitle:'连接被拒',
     rejectBody:'本钱包持有者拒绝向本报记者打开钱包。我们尊重你的隐私。准备好了再来就行。',
     rejectOk:'好的',
+    disconnect:'断开',
+    addrCopied:'地址已复制',
     figEight:'一笔八位数的告别。',
     figSeven:'一笔七位数的告别。',
     figSix:'一笔六位数的再见。',
@@ -1197,6 +1218,52 @@ async function analyzeWallet(addr){
   return { trades: enriched, filteredText, transfersCount: transfers.length };
 }
 
+/* ============== WALLET BADGE ============== */
+let connectedProvider = null;
+let connectedAddr = null;
+
+function showWalletBadge(addr){
+  connectedAddr = addr;
+  $('#walletAddr').textContent = shortAddr(addr);
+  $('#walletBadge').classList.add('on');
+}
+function hideWalletBadge(){
+  connectedAddr = null;
+  $('#walletBadge').classList.remove('on');
+}
+
+async function disconnectWallet(){
+  // Best-effort revoke. MetaMask supports wallet_revokePermissions, others
+  // (mobile in-app browsers, older wallets) don't — that's fine, the UI
+  // forgets the connection regardless and we always force the picker on the
+  // next connect via wallet_requestPermissions.
+  const p = connectedProvider;
+  if(p){
+    try{
+      await p.request({
+        method: 'wallet_revokePermissions',
+        params: [{ eth_accounts: {} }]
+      });
+    }catch{}
+  }
+  connectedProvider = null;
+  hideWalletBadge();
+  backToLanding();
+}
+
+async function copyAddr(){
+  if(!connectedAddr) return;
+  try{
+    await navigator.clipboard.writeText(connectedAddr);
+    const el = $('#walletAddr'); const old = el.textContent;
+    el.textContent = t('addrCopied');
+    setTimeout(()=> el.textContent = old, 1200);
+  }catch{}
+}
+
+$('#walletAddr').addEventListener('click', copyAddr);
+$('#walletDisc').addEventListener('click', disconnectWallet);
+
 /* ============== WALLET CONNECT ============== */
 // Wait until a wallet provider has had a chance to inject `window.ethereum`.
 // Some wallets (imToken, Coinbase, Rabby, multi-provider setups) inject
@@ -1261,6 +1328,21 @@ async function connectWallet(){
     const accounts = await provider.request({ method: 'eth_requestAccounts' });
     const addr = accounts && accounts[0];
     if(!addr) throw new Error('no account returned');
+    connectedProvider = provider;
+    showWalletBadge(addr);
+    // sync UI when the user disconnects / switches account from the wallet side
+    if(provider.on && !provider._phgBound){
+      provider._phgBound = true;
+      provider.on('accountsChanged', (accs)=>{
+        if(!accs || !accs.length){
+          connectedProvider = null;
+          hideWalletBadge();
+          backToLanding();
+        }else{
+          showWalletBadge(accs[0]);
+        }
+      });
+    }
 
     $('#landing').style.display='none';
     $('#working').classList.add('active');
