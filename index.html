@@ -330,7 +330,76 @@
   .share-card .ops button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--blood)}
   .share-card .hint{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-soft);margin-top:10px;text-transform:uppercase}
 
-  /* report-footer "try another" */
+  /* ============== SHARE CARD (off-screen, fixed 1080x1350) ============== */
+  .share-card-stage{position:fixed;left:-99999px;top:0;width:1080px;height:1350px;pointer-events:none;}
+  .scard{
+    width:1080px;height:1350px;
+    background:#15110c;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      radial-gradient(circle at 20% 10%, rgba(138,13,13,0.18), transparent 50%),
+      radial-gradient(circle at 80% 90%, rgba(138,13,13,0.12), transparent 55%);
+    background-size:4px 4px, 100% 100%, 100% 100%;
+    padding:60px;
+    font-family:'EB Garamond',Georgia,serif;
+    color:#f1e7d0;
+    position:relative;
+    display:flex;flex-direction:column;
+  }
+  .scard .inner{
+    flex:1;border:2px solid #f1e7d0;
+    box-shadow:inset 0 0 0 6px #15110c, inset 0 0 0 8px #f1e7d0;
+    padding:60px 70px 50px;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .scard .brand-row{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #f1e7d0;padding-bottom:18px;}
+  .scard .brand{font-family:'UnifrakturCook',serif;font-size:52px;line-height:1;letter-spacing:.01em;}
+  .scard .brand-sub{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:#c9b78a;}
+  .scard .ed{font-family:'Special Elite',monospace;font-size:14px;letter-spacing:.25em;color:#c9b78a;text-transform:uppercase;text-align:right}
+
+  .scard .kicker{
+    text-align:center;margin-top:46px;
+    font-family:'Special Elite',monospace;font-size:18px;letter-spacing:.45em;text-transform:uppercase;
+    color:#e35a4a;
+  }
+  .scard .obit-name{
+    text-align:center;font-family:'Playfair Display',serif;font-weight:900;
+    font-size:148px;line-height:1;margin:18px 0 4px;letter-spacing:-.01em;
+  }
+  .scard .obit-ticker{text-align:center;font-family:'Special Elite',monospace;font-size:22px;letter-spacing:.35em;color:#c9b78a;}
+
+  .scard .lost-block{text-align:center;margin-top:42px;}
+  .scard .lost-label{font-family:'Special Elite',monospace;font-size:16px;letter-spacing:.3em;text-transform:uppercase;color:#c9b78a;}
+  .scard .lost-amount{
+    font-family:'Playfair Display',serif;font-weight:900;
+    font-size:180px;line-height:1;color:#e35a4a;margin-top:10px;letter-spacing:-.02em;
+    text-shadow:6px 6px 0 rgba(0,0,0,0.4);
+  }
+  .scard .mult{font-family:'Playfair Display',serif;font-style:italic;font-size:38px;color:#f1e7d0;margin-top:12px;}
+  .scard .mult b{color:#e35a4a;font-weight:900;font-style:normal}
+
+  .scard .stat-grid{
+    margin-top:46px;
+    display:grid;grid-template-columns:1fr 1fr;
+    border:1px solid #c9b78a;
+  }
+  .scard .stat-grid > div{
+    padding:22px 26px;border-right:1px solid #c9b78a;border-bottom:1px solid #c9b78a;
+  }
+  .scard .stat-grid > div:nth-child(2n){border-right:none}
+  .scard .stat-grid > div:nth-last-child(-n+2){border-bottom:none}
+  .scard .stat-label{font-family:'Special Elite',monospace;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#c9b78a;}
+  .scard .stat-val{font-family:'Playfair Display',serif;font-weight:700;font-size:32px;margin-top:8px;color:#f1e7d0}
+  .scard .stat-val.red{color:#e35a4a}
+
+  .scard .foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1e7d0;padding-top:22px;margin-top:auto;}
+  .scard .foot-left{font-family:'Special Elite',monospace;font-size:14px;letter-spacing:.18em;color:#c9b78a;text-transform:uppercase;line-height:1.6}
+  .scard .foot-left b{color:#f1e7d0;letter-spacing:.22em}
+  .scard .foot-right{display:flex;align-items:center;gap:18px}
+  .scard .qr-wrap{width:140px;height:140px;background:#f1e7d0;padding:8px;display:flex;align-items:center;justify-content:center}
+  .scard .qr-wrap img,.scard .qr-wrap canvas{display:block;width:124px !important;height:124px !important}
+  .scard .url{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.15em;color:#c9b78a;text-align:right;line-height:1.5}
+  .scard .url b{color:#e35a4a}
   .report-back{display:flex;justify-content:center;margin-top:24px;padding-bottom:8px}
   .report-back button{background:transparent;color:var(--ink);border:1px solid var(--rule);padding:12px 22px;font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-size:12px;cursor:pointer}
   .report-back button:hover{background:var(--ink);color:var(--paper)}
@@ -486,6 +555,51 @@
     <p data-i18n="qrP">Open imToken or any mobile wallet's built-in browser and scan this code. Then tap "Read My Obituary".</p>
     <div id="qrcode"></div>
     <div class="url-strip" id="qrUrl"></div>
+  </div>
+</div>
+
+<!-- Off-screen share card -->
+<div class="share-card-stage" id="shareStage" aria-hidden="true">
+  <div class="scard" id="scard">
+    <div class="inner">
+      <div class="brand-row">
+        <div>
+          <div class="brand">The Paperhand Gazette</div>
+          <div class="brand-sub" id="sc_sub">Obituaries for the coins you sold too early</div>
+        </div>
+        <div class="ed" id="sc_ed">VOL. X · LATE EDITION</div>
+      </div>
+
+      <div>
+        <div class="kicker" id="sc_kicker">FRONT PAGE · LARGEST GOODBYE</div>
+        <div class="obit-name" id="sc_name">PEPE</div>
+        <div class="obit-ticker" id="sc_ticker">$ PEPE</div>
+      </div>
+
+      <div class="lost-block">
+        <div class="lost-label" id="sc_lostLabel">Could be worth today</div>
+        <div class="lost-amount" id="sc_lost">$1.28M</div>
+        <div class="mult" id="sc_mult">missed by <b>218,000×</b></div>
+      </div>
+
+      <div class="stat-grid">
+        <div><div class="stat-label" id="sc_l1">Sold at</div><div class="stat-val" id="sc_v1">$0.00000044</div></div>
+        <div><div class="stat-label" id="sc_l2">Peak (ATH)</div><div class="stat-val red" id="sc_v2">$0.00001717</div></div>
+        <div><div class="stat-label" id="sc_l3">Received</div><div class="stat-val" id="sc_v3">$185</div></div>
+        <div><div class="stat-label" id="sc_l4">Same bag at ATH</div><div class="stat-val red" id="sc_v4">$1,284,586</div></div>
+      </div>
+
+      <div class="foot">
+        <div class="foot-left">
+          Bearer · <b id="sc_addr">0x••••…••••</b><br/>
+          <span id="sc_dates">Bought 14 Apr 2023 · Sold 03 May 2023</span>
+        </div>
+        <div class="foot-right">
+          <div class="qr-wrap" id="sc_qr"></div>
+          <div class="url">read your own at<br/><b>paperhand-gazette<br/>.vercel.app</b></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -819,10 +933,15 @@ async function runWorking(){
 }
 
 /* ============== UI: RENDER REPORT ============== */
+let lastHero = null;
+let lastAddr = null;
+
 function renderReport(addr, trades, filteredText){
   const ranked = analyseTrades(trades);
   const hero   = ranked[0];
   const others = ranked.slice(1, 7);
+  lastHero = hero;
+  lastAddr = addr;
 
   $('#shortAddr').textContent = shortAddr(addr);
   $('#footAddr').textContent  = shortAddr(addr);
@@ -1207,41 +1326,76 @@ let lastShareBlob = null;
 let lastShareDataUrl = null;
 let shareRenderPromise = null;
 
-function maskAddress(short){
-  // short looks like 0xabcd…ef12 — turn into 0x••••…••••
-  if(!short) return '0x••••…••••';
+function maskAddress(){
   return '0x' + '•'.repeat(4) + '…' + '•'.repeat(4);
 }
 
+function populateShareCard(){
+  const hero = lastHero;
+  if(!hero) return false;
+  // headline kicker
+  const heroLoss = hero.lostUSD;
+  let kickerKey;
+  if(heroLoss>=10_000_000) kickerKey='figEight';
+  else if(heroLoss>=1_000_000) kickerKey='figSeven';
+  else if(heroLoss>=100_000) kickerKey='figSix';
+  else if(heroLoss>=10_000) kickerKey='figFive';
+  else kickerKey='figModest';
+
+  const isZh = currentLang === 'zh';
+  $('#sc_sub').textContent    = t('subtitle');
+  $('#sc_ed').textContent     = isZh ? '第 X 卷 · 晚间版' : 'VOL. X · LATE EDITION';
+  $('#sc_kicker').textContent = isZh ? '头版 · 最大的告别' : 'FRONT PAGE · LARGEST GOODBYE';
+  $('#sc_name').textContent   = (hero.name||'').toUpperCase();
+  $('#sc_ticker').textContent = '$ ' + hero.ticker;
+  $('#sc_lostLabel').textContent = t('couldBeWorth');
+  $('#sc_lost').textContent   = fmtUSD(hero.athValue);
+  $('#sc_mult').innerHTML     = isZh
+    ? `卖飞 <b>${hero.multiple.toFixed(0)}×</b>`
+    : `missed by <b>${hero.multiple.toFixed(0)}×</b>`;
+
+  $('#sc_l1').textContent = t('soldAt');
+  $('#sc_v1').textContent = fmtPx(hero.soldPrice);
+  $('#sc_l2').textContent = isZh ? '历史最高价' : 'Peak (ATH)';
+  $('#sc_v2').textContent = fmtPx(hero.athPrice);
+  $('#sc_l3').textContent = t('received');
+  $('#sc_v3').textContent = fmtUSDFull(hero.received);
+  $('#sc_l4').textContent = t('sameBagAth');
+  $('#sc_v4').textContent = fmtUSDFull(hero.athValue);
+
+  $('#sc_addr').textContent = maskAddress();
+  $('#sc_dates').textContent = t('boughtSold')(fmtDate(hero.boughtAt), fmtDate(hero.soldAt));
+
+  // (re)build QR — qrcodejs appends, so clear first
+  const qrBox = $('#sc_qr');
+  qrBox.innerHTML = '';
+  if(window.QRCode){
+    const url = location.href.split('?')[0].split('#')[0];
+    new QRCode(qrBox, { text: url, width: 124, height: 124, colorDark:'#15110c', colorLight:'#f1e7d0', correctLevel: QRCode.CorrectLevel.M });
+  }
+  return true;
+}
+
 async function renderShareImage(){
-  const target = document.querySelector('.sheet');
-  // Snapshot the address-bearing nodes, swap to masked, render, then restore.
-  const swaps = [];
-  const shortEl = document.getElementById('shortAddr');
-  const footEl  = document.getElementById('footAddr');
-  const deckEl  = document.getElementById('frontDeck');
-  if(shortEl){ swaps.push([shortEl, 'textContent', shortEl.textContent]); shortEl.textContent = maskAddress(shortEl.textContent); }
-  if(footEl ){ swaps.push([footEl,  'textContent', footEl.textContent ]); footEl.textContent  = maskAddress(footEl.textContent); }
-  if(deckEl ){
-    swaps.push([deckEl, 'innerHTML', deckEl.innerHTML]);
-    deckEl.innerHTML = deckEl.innerHTML.replace(/0x[a-fA-F0-9]{4}…[a-fA-F0-9]{4}/g, maskAddress());
-  }
-  try{
-    const opts = {
-      backgroundColor: '#f1e7d0',
-      scale: Math.min(window.devicePixelRatio || 1, 2),
-      useCORS: true,
-      logging: false,
-      ignoreElements: (el)=> el.classList && (el.classList.contains('lang-switch') || el.classList.contains('report-back'))
-    };
-    const canvas = await html2canvas(target, opts);
-    const dataUrl = canvas.toDataURL('image/png');
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-    return { dataUrl, blob };
-  }finally{
-    // restore original (un-masked) content for the live view
-    for(const [el, prop, val] of swaps) el[prop] = val;
-  }
+  if(!populateShareCard()) throw new Error('no report data');
+  const target = document.getElementById('scard');
+  // Wait for fonts (UnifrakturCook, Playfair, Special Elite) so the snapshot
+  // doesn't fall back to a generic serif mid-render.
+  try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch{}
+  await new Promise(r=>requestAnimationFrame(()=>r()));
+  const canvas = await html2canvas(target, {
+    backgroundColor: null,
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    width: 1080,
+    height: 1350,
+    windowWidth: 1080,
+    windowHeight: 1350
+  });
+  const dataUrl = canvas.toDataURL('image/png');
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  return { dataUrl, blob };
 }
 
 function prefetchShareImage(){
