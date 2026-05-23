@@ -289,14 +289,18 @@
   .lang-switch button.on{background:var(--ink);color:var(--paper)}
 
   /* wallet badge */
-  .wallet-badge{position:fixed;top:46px;right:18px;z-index:10;display:none;align-items:center;gap:0;border:1px solid var(--rule);background:var(--paper);font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.08em;box-shadow:2px 2px 0 var(--blood);}
-  .wallet-badge.on{display:flex}
-  .wallet-badge .dot{width:8px;height:8px;border-radius:50%;background:#2a8a3a;margin:0 8px;box-shadow:0 0 0 2px rgba(42,138,58,0.18)}
-  .wallet-badge .addr{padding:6px 10px 6px 0;color:var(--ink);cursor:pointer;user-select:all;}
+  .wallet-badge{position:fixed;top:46px;right:18px;z-index:10;display:flex;align-items:center;gap:0;border:1px solid var(--rule);background:var(--paper);font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.08em;box-shadow:2px 2px 0 var(--blood);}
+  .wallet-badge .dot{width:8px;height:8px;border-radius:50%;background:#9a8c70;margin:0 8px;box-shadow:0 0 0 2px rgba(0,0,0,0.06)}
+  .wallet-badge.on .dot{background:#2a8a3a;box-shadow:0 0 0 2px rgba(42,138,58,0.18)}
+  .wallet-badge .addr{padding:6px 10px 6px 0;color:var(--ink);cursor:pointer;user-select:all;text-transform:uppercase}
   .wallet-badge .addr:hover{color:var(--blood)}
   .wallet-badge .sep{width:1px;align-self:stretch;background:var(--rule)}
   .wallet-badge .disc{background:transparent;border:none;padding:6px 10px;cursor:pointer;color:var(--ink-soft);font-family:inherit;font-size:inherit;letter-spacing:inherit;text-transform:uppercase}
   .wallet-badge .disc:hover{color:var(--blood)}
+  /* disconnected variant */
+  .wallet-badge:not(.on) .sep,
+  .wallet-badge:not(.on) .disc{display:none}
+  .wallet-badge:not(.on) .addr{padding:6px 12px 6px 0;}
 
   /* clean-hands edition */
   .clean{display:none;text-align:center;padding:60px 20px 30px;}
@@ -422,8 +426,8 @@
 </div>
 
 <div class="wallet-badge" id="walletBadge">
-  <span class="dot" title="connected"></span>
-  <span class="addr" id="walletAddr" title="click to copy">0x…</span>
+  <span class="dot" title=""></span>
+  <span class="addr" id="walletAddr" title="">Connect Wallet</span>
   <span class="sep"></span>
   <button class="disc" id="walletDisc" data-i18n="disconnect">Disconnect</button>
 </div>
@@ -715,6 +719,7 @@ const LANG = {
     rejectOk:'OK',
     disconnect:'Disconnect',
     addrCopied:'Address copied',
+    connectShort:'Connect Wallet',
     figEight:'An eight-figure farewell.',
     figSeven:'A seven-figure farewell.',
     figSix:'A six-figure goodbye.',
@@ -791,6 +796,7 @@ const LANG = {
     rejectOk:'好的',
     disconnect:'断开',
     addrCopied:'地址已复制',
+    connectShort:'连接钱包',
     figEight:'一笔八位数的告别。',
     figSeven:'一笔七位数的告别。',
     figSix:'一笔六位数的再见。',
@@ -828,6 +834,8 @@ $$('.lang-switch button').forEach(b=>{
   b.addEventListener('click', ()=>{
     currentLang = b.dataset.lang;
     applyLang();
+    // refresh wallet badge label if disconnected (its text isn't data-i18n driven)
+    if(!connectedAddr) $('#walletAddr').textContent = t('connectShort');
     // text changed — drop cached share image, regen if a report is on screen
     lastShareBlob = null;
     lastShareDataUrl = null;
@@ -1111,7 +1119,11 @@ const DEX_ROUTERS = new Set([
   '0x000000000022d473030f116ddee9f6b43ac78ba3', // Permit2 (often appears in swap flows)
   '0xa69babef1ca67a37ffaf7a485dfff3382056e78c', // Defi Saver
   '0xc36442b4a4522e871399cd717abdd847ab11fe88', // Uniswap V3 NFT Manager (LP exits land here)
-]);
+  '0xefF92A263d31888d860bD50809A8D171709b7b1c', // PancakeSwap SmartRouter (Ethereum)
+  '0x13f4ea83d0bd40e75c8222255bc855a974568dd4', // PancakeSwap V3 SwapRouter (Ethereum)
+  '0x1b81d678ffb9c0263b24a97847620c99d213eb14', // PancakeSwap V3 SwapRouter (alt deployment)
+  '0x10ed43c718714eb63d5aa57b78b54704e256024e', // PancakeSwap V2 Router (BSC, kept for completeness)
+].map(s=>s.toLowerCase()));
 
 function isStable(contractAddr, symbol){
   if(STABLES.has(contractAddr.toLowerCase())) return true;
@@ -1127,7 +1139,22 @@ function isStable(contractAddr, symbol){
 // Wallet-to-wallet transfers and stablecoins are excluded.
 function extractSoldTokens(transfers, walletAddr){
   const me = walletAddr.toLowerCase();
-  // Group by contract first, sorted by time (Etherscan returns sort=desc, we re-sort asc here).
+
+  // Build an index: for each tx hash, which token contracts did we receive IN?
+  // A swap atomically moves token A OUT and token B IN within the same tx,
+  // so any OUT whose tx hash also contains an IN of a DIFFERENT token is a
+  // swap on some DEX (Uniswap V2/V3 pools, Sushi, Pancake, 0x, 1inch, Cow,
+  // Paraswap, etc.). This handles the common case where the OUT 'to' is the
+  // POOL address (not the router), which our router whitelist would miss.
+  const inByTx = new Map(); // txhash -> Set of contract addresses received
+  for(const tx of transfers){
+    if(tx.to.toLowerCase() === me){
+      const c = tx.contractAddress.toLowerCase();
+      if(!inByTx.has(tx.hash)) inByTx.set(tx.hash, new Set());
+      inByTx.get(tx.hash).add(c);
+    }
+  }
+
   const byToken = new Map();
   for(const tx of transfers){
     const c = tx.contractAddress.toLowerCase();
@@ -1143,7 +1170,6 @@ function extractSoldTokens(transfers, walletAddr){
     txs.sort((a,b)=> Number(a.timeStamp) - Number(b.timeStamp));
 
     let firstBuyTs = null;
-    let firstBuyHash = null;
     let dexSoldAmount = 0;
     let lastSellTs = null;
     const decimals = parseInt(sample.tokenDecimal) || 18;
@@ -1151,13 +1177,15 @@ function extractSoldTokens(transfers, walletAddr){
     for(const tx of txs){
       const isIn  = tx.to.toLowerCase()   === me;
       const isOut = tx.from.toLowerCase() === me;
-      if(isIn && firstBuyTs === null){
-        firstBuyTs = Number(tx.timeStamp);
-        firstBuyHash = tx.hash;
-      }
+      if(isIn && firstBuyTs === null) firstBuyTs = Number(tx.timeStamp);
       if(isOut && firstBuyTs !== null){
         const dest = tx.to.toLowerCase();
-        if(!DEX_ROUTERS.has(dest)) continue; // skip wallet-to-wallet, bridges, deposits, gifts
+        const sameTxIns = inByTx.get(tx.hash);
+        // sameTxIns may include this very contract if you got refunded; we want
+        // a *different* token IN within the same tx, which is the hallmark of a swap.
+        const swapEvidence = sameTxIns && [...sameTxIns].some(c => c !== contract);
+        const isRouter = DEX_ROUTERS.has(dest);
+        if(!swapEvidence && !isRouter) continue; // wallet-to-wallet / bridge / deposit / gift
         const amt = parseFloat(tx.value) / Math.pow(10, decimals);
         if(!isFinite(amt) || amt <= 0) continue;
         dexSoldAmount += amt;
@@ -1315,13 +1343,20 @@ let connectedAddr = null;
 
 function showWalletBadge(addr){
   connectedAddr = addr;
-  $('#walletAddr').textContent = shortAddr(addr);
+  const el = $('#walletAddr');
+  el.textContent = shortAddr(addr);
+  el.title = addr + ' — click to copy';
   $('#walletBadge').classList.add('on');
 }
 function hideWalletBadge(){
   connectedAddr = null;
+  const el = $('#walletAddr');
+  el.textContent = t('connectShort');
+  el.title = '';
   $('#walletBadge').classList.remove('on');
 }
+// Initialise the badge so it shows the connect CTA from first paint.
+hideWalletBadge();
 
 async function disconnectWallet(){
   // Best-effort revoke. MetaMask supports wallet_revokePermissions, others
@@ -1343,7 +1378,11 @@ async function disconnectWallet(){
 }
 
 async function copyAddr(){
-  if(!connectedAddr) return;
+  // Unconnected: badge doubles as a Connect CTA.
+  if(!connectedAddr){
+    connectWallet();
+    return;
+  }
   try{
     await navigator.clipboard.writeText(connectedAddr);
     const el = $('#walletAddr'); const old = el.textContent;
