@@ -1021,13 +1021,26 @@ function backToLanding(){
 
 // Fetch ERC20 transfers (Etherscan via our proxy)
 async function fetchTransfers(addr){
-  const res = await fetch(`/api/transfers?addr=${addr}`);
-  if(!res.ok) throw new Error('transfer fetch failed');
-  const data = await res.json();
-  // status='0' with message 'No transactions found' is a normal empty wallet, not an error
+  let res, data;
+  try{
+    res = await fetch(`/api/transfers?addr=${addr}`);
+  }catch(netErr){
+    throw new Error('network error reaching /api/transfers: ' + (netErr.message||netErr));
+  }
+  try{
+    data = await res.json();
+  }catch{
+    throw new Error(`/api/transfers returned non-JSON (HTTP ${res.status})`);
+  }
+  if(!res.ok){
+    const detail = data?.detail || data?.message || `HTTP ${res.status}`;
+    throw new Error('transfer fetch failed: ' + detail);
+  }
   if(data.status !== '1'){
-    if((data.message||'').toLowerCase().includes('no transactions')) return [];
-    throw new Error(data.message || 'Etherscan API error');
+    const msg = (data.message||'').toLowerCase();
+    // Etherscan returns status='0' with these messages for normal empty wallets
+    if(msg.includes('no transactions') || msg.includes('no records')) return [];
+    throw new Error('Etherscan: ' + (data.message || data.detail || 'unknown error'));
   }
   return data.result || [];
 }
