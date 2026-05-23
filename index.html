@@ -465,6 +465,19 @@
 
 </main>
 
+<!-- Notice modal (rejections, errors, in newspaper style) -->
+<div class="share-overlay" id="noticeOverlay">
+  <div class="share-card" style="max-width:420px">
+    <button class="close" id="noticeClose">×</button>
+    <div style="font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.3em;color:var(--blood);text-transform:uppercase;margin-bottom:8px" id="noticeKicker">— Stop the Press —</div>
+    <h4 id="noticeTitle" style="font-size:26px;margin-bottom:12px">Connection Refused</h4>
+    <p id="noticeBody" style="font-size:16px;font-style:italic;margin-bottom:18px">The bearer declined to open their wallet to our reporters. We respect their privacy.</p>
+    <div class="ops">
+      <button id="noticeOk">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- QR modal -->
 <div class="qr-overlay" id="qrOverlay">
   <div class="qr-card">
@@ -565,6 +578,10 @@ const LANG = {
     shareRendering:'Rendering image…',
     shareCopied:'Image copied to clipboard',
     shareCopyFail:'Copy failed — long-press the image to save.',
+    rejectKicker:'— Stop the Press —',
+    rejectTitle:'Connection Refused',
+    rejectBody:'The bearer declined to open their wallet to our reporters. The Gazette respects their privacy. Try again whenever you are ready.',
+    rejectOk:'OK',
     figEight:'An eight-figure farewell.',
     figSeven:'A seven-figure farewell.',
     figSix:'A six-figure goodbye.',
@@ -635,6 +652,10 @@ const LANG = {
     shareRendering:'正在生成图片……',
     shareCopied:'图片已复制到剪贴板',
     shareCopyFail:'复制失败，请长按图片保存。',
+    rejectKicker:'— 停 印 —',
+    rejectTitle:'连接被拒',
+    rejectBody:'本钱包持有者拒绝向本报记者打开钱包。我们尊重你的隐私。准备好了再来就行。',
+    rejectOk:'好的',
     figEight:'一笔八位数的告别。',
     figSeven:'一笔七位数的告别。',
     figSix:'一笔六位数的再见。',
@@ -1054,6 +1075,7 @@ function waitForEthereum(timeoutMs = 3500){
   return new Promise(resolve => {
     if(window.ethereum) return resolve(window.ethereum);
     let done = false;
+    let poll, to;
     const finish = (val)=>{ if(done) return; done = true; cleanup(); resolve(val); };
     const onInit = ()=> finish(window.ethereum || null);
     const onAnnounce = (e)=>{
@@ -1064,15 +1086,16 @@ function waitForEthereum(timeoutMs = 3500){
     function cleanup(){
       window.removeEventListener('ethereum#initialized', onInit);
       window.removeEventListener('eip6963:announceProvider', onAnnounce);
-      clearInterval(poll);
-      clearTimeout(to);
+      if(poll) clearInterval(poll);
+      if(to) clearTimeout(to);
     }
     window.addEventListener('ethereum#initialized', onInit, { once: true });
     window.addEventListener('eip6963:announceProvider', onAnnounce);
-    // EIP-6963 — ask any wallet to identify itself.
+    poll = setInterval(()=>{ if(window.ethereum) finish(window.ethereum); }, 120);
+    to = setTimeout(()=> finish(window.ethereum || null), timeoutMs);
+    // EIP-6963 — ask any wallet to identify itself. This may dispatch
+    // onAnnounce synchronously, so timers must already be assigned above.
     try{ window.dispatchEvent(new Event('eip6963:requestProvider')); }catch{}
-    const poll = setInterval(()=>{ if(window.ethereum) finish(window.ethereum); }, 120);
-    const to = setTimeout(()=> finish(window.ethereum || null), timeoutMs);
   });
 }
 
@@ -1132,15 +1155,14 @@ async function connectWallet(){
     renderReport(addr, trades, filteredText);
   }catch(e){
     console.error(e);
-    // user rejection — quietly return to landing, no scary red text
-    if(e?.code === 4001 || /rejected|denied/i.test(e?.message||'')){
-      $('#working').classList.remove('active');
-      $('#landing').style.display='grid';
+    $('#working').classList.remove('active');
+    $('#landing').style.display='grid';
+    // user rejection — show a styled in-paper notice instead of red text
+    if(e?.code === 4001 || e?.code === -32002 || /reject|denied|user denied/i.test(e?.message||'')){
+      showNotice('reject');
       return;
     }
     $('#errMsg').textContent = t('errGeneric') + (e.shortMessage || e.message || e);
-    $('#working').classList.remove('active');
-    $('#landing').style.display='grid';
   }
 }
 
@@ -1158,6 +1180,16 @@ function showQR(){
   $('#qrOverlay').classList.add('active');
 }
 function hideQR(){ $('#qrOverlay').classList.remove('active'); }
+
+/* ============== NOTICE MODAL (rejections, errors) ============== */
+function showNotice(kind /* 'reject' */){
+  $('#noticeKicker').textContent = t('rejectKicker');
+  $('#noticeTitle').textContent  = t('rejectTitle');
+  $('#noticeBody').textContent   = t('rejectBody');
+  $('#noticeOk').textContent     = t('rejectOk');
+  $('#noticeOverlay').classList.add('active');
+}
+function hideNotice(){ $('#noticeOverlay').classList.remove('active'); }
 
 /* ============== SAMPLE EDITION (no wallet) ============== */
 async function showSample(){
@@ -1297,6 +1329,9 @@ $('#shareOverlay').addEventListener('click', (e)=>{ if(e.target.id==='shareOverl
 $('#shareDownload').addEventListener('click', downloadShareImage);
 $('#shareCopy'   ).addEventListener('click', copyShareImage);
 $('#shareNative' ).addEventListener('click', nativeShareImage);
+$('#noticeOk'    ).addEventListener('click', hideNotice);
+$('#noticeClose' ).addEventListener('click', hideNotice);
+$('#noticeOverlay').addEventListener('click', (e)=>{ if(e.target.id==='noticeOverlay') hideNotice(); });
 </script>
 </body>
 </html>
