@@ -608,7 +608,7 @@
 
       <div class="foot">
         <div class="foot-left">
-          Bearer · <b id="sc_addr">0x••••…••••</b><br/>
+          Bearer · <b id="sc_addr">0x????…????</b><br/>
           <span id="sc_dates">Bought 14 Apr 2023 · Sold 03 May 2023</span>
         </div>
         <div class="foot-right">
@@ -1066,26 +1066,117 @@ async function fetchTransfers(addr){
   return data.result || [];
 }
 
-// Identify sold tokens (outgoing transfers)
+// Stablecoins, wrapped equivalents, and pure utility tokens we never
+// want to count as paperhand candidates — there is no ATH story here.
+const STABLES = new Set([
+  // contract addresses, lowercased
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
+  '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
+  '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
+  '0x4fabb145d64652a948d72533023f6e7a623c7c53', // BUSD
+  '0x0000000000085d4780b73119b644ae5ecd22b376', // TrueUSD
+  '0x8e870d67f660d95d5be530380d0ec0bd388289e1', // USDP / Pax
+  '0x853d955acef822db058eb8505911ed77f175b99e', // FRAX
+  '0x5f98805a4e8be255a32880fdec7f6728c6568ba0', // LUSD
+  '0x6c3ea9036406852006290770bedfcaba0e23a0e8', // PYUSD
+  '0x57ab1ec28d129707052df4df418d58a2d46d5f51', // sUSD
+  '0xdb25f211ab05b1c97d595516f45794528a807ad8', // EURS
+  '0xc581b735a1688071a1746c968e0798d642ede491', // EURT
+  '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', // GUSD
+  '0x8daebade922df735c38c80c7ebd708af50815faa', // tBTC (utility)
+]);
+const STABLE_SYMBOLS = new Set([
+  'USDC','USDT','DAI','BUSD','TUSD','USDP','FRAX','LUSD','PYUSD','SUSD',
+  'USDE','USDD','GUSD','EURS','EURT','EURC','MIM','USDM','USDS','CRVUSD','FDUSD'
+]);
+
+// Known DEX routers / aggregators on Ethereum mainnet. A sell is only
+// counted as a sell if the OUT transfer's destination is one of these —
+// otherwise it's almost certainly a wallet-to-wallet transfer or a
+// bridge / deposit, not a paperhand event.
+const DEX_ROUTERS = new Set([
+  '0x7a250d5630b4cf539739df2c5dacb4c659f2488d', // Uniswap V2 Router
+  '0xe592427a0aece92de3edee1f18e0157c05861564', // Uniswap V3 SwapRouter
+  '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45', // Uniswap V3 SwapRouter02
+  '0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b', // Uniswap Universal Router
+  '0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad', // Uniswap Universal Router 2
+  '0x66a9893cc07d91d95644aedd05d03f95e1dba8af', // Uniswap V4 UniversalRouter
+  '0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f', // SushiSwap Router
+  '0x1111111254eeb25477b68fb85ed929f73a960582', // 1inch V5
+  '0x111111125421ca6dc452d289314280a0f8842a65', // 1inch V6
+  '0xdef1c0ded9bec7f1a1670819833240f027b25eff', // 0x ExchangeProxy
+  '0xdef171fe48cf0115b1d80b88dc8eab59176fee57', // Paraswap V5
+  '0x6a000f20005980200259b80c5102003040001068', // Paraswap V6
+  '0x9008d19f58aabd9ed0d60971565aa8510560ab41', // CowSwap GPv2 Settlement
+  '0x000000000022d473030f116ddee9f6b43ac78ba3', // Permit2 (often appears in swap flows)
+  '0xa69babef1ca67a37ffaf7a485dfff3382056e78c', // Defi Saver
+  '0xc36442b4a4522e871399cd717abdd847ab11fe88', // Uniswap V3 NFT Manager (LP exits land here)
+]);
+
+function isStable(contractAddr, symbol){
+  if(STABLES.has(contractAddr.toLowerCase())) return true;
+  const s = (symbol||'').toUpperCase();
+  if(STABLE_SYMBOLS.has(s)) return true;
+  // catch wstETH/stETH-style derivatives only if symbol literally starts with USD/EUR
+  if(/^USD|^EUR/.test(s) && s.length<=6) return true;
+  return false;
+}
+
+// Walk the transfer log per-token and only treat OUT-to-DEX as sells, and
+// only count sells that happened AFTER an IN (i.e. you bought, then sold).
+// Wallet-to-wallet transfers and stablecoins are excluded.
 function extractSoldTokens(transfers, walletAddr){
-  const sold = {};
-  transfers.forEach(tx => {
-    const isOut = tx.from.toLowerCase() === walletAddr.toLowerCase();
-    if(!isOut) return;
-    const addr = tx.contractAddress.toLowerCase();
-    const amt = parseFloat(tx.value) / Math.pow(10, parseInt(tx.tokenDecimal));
-    if(!sold[addr]) sold[addr] = {
-      address: addr,
-      symbol: tx.tokenSymbol,
-      name: tx.tokenName,
-      soldAmount: 0,
-      firstSeen: tx.timeStamp,
-      lastSold: tx.timeStamp
-    };
-    sold[addr].soldAmount += amt;
-    sold[addr].lastSold = tx.timeStamp;
-  });
-  return Object.values(sold).filter(t => t.soldAmount > 0);
+  const me = walletAddr.toLowerCase();
+  // Group by contract first, sorted by time (Etherscan returns sort=desc, we re-sort asc here).
+  const byToken = new Map();
+  for(const tx of transfers){
+    const c = tx.contractAddress.toLowerCase();
+    if(!byToken.has(c)) byToken.set(c, []);
+    byToken.get(c).push(tx);
+  }
+
+  const sold = [];
+  for(const [contract, txs] of byToken){
+    const sample = txs[0];
+    if(isStable(contract, sample.tokenSymbol)) continue;
+
+    txs.sort((a,b)=> Number(a.timeStamp) - Number(b.timeStamp));
+
+    let firstBuyTs = null;
+    let firstBuyHash = null;
+    let dexSoldAmount = 0;
+    let lastSellTs = null;
+    const decimals = parseInt(sample.tokenDecimal) || 18;
+
+    for(const tx of txs){
+      const isIn  = tx.to.toLowerCase()   === me;
+      const isOut = tx.from.toLowerCase() === me;
+      if(isIn && firstBuyTs === null){
+        firstBuyTs = Number(tx.timeStamp);
+        firstBuyHash = tx.hash;
+      }
+      if(isOut && firstBuyTs !== null){
+        const dest = tx.to.toLowerCase();
+        if(!DEX_ROUTERS.has(dest)) continue; // skip wallet-to-wallet, bridges, deposits, gifts
+        const amt = parseFloat(tx.value) / Math.pow(10, decimals);
+        if(!isFinite(amt) || amt <= 0) continue;
+        dexSoldAmount += amt;
+        lastSellTs = Number(tx.timeStamp);
+      }
+    }
+
+    if(dexSoldAmount > 0 && firstBuyTs !== null && lastSellTs !== null){
+      sold.push({
+        address: contract,
+        symbol: sample.tokenSymbol,
+        name: sample.tokenName,
+        soldAmount: dexSoldAmount,
+        firstSeen: firstBuyTs,
+        lastSold: lastSellTs
+      });
+    }
+  }
+  return sold;
 }
 
 // GoPlus honeypot check (via our proxy)
@@ -1416,8 +1507,10 @@ let lastShareBlob = null;
 let lastShareDataUrl = null;
 let shareRenderPromise = null;
 
-function maskAddress(){
-  return '0x' + '•'.repeat(4) + '…' + '•'.repeat(4);
+function maskAddress(addr){
+  // Keep real prefix/suffix so the obit feels personal but not doxing.
+  if(!addr) return '0x????…????';
+  return addr.slice(0,6) + '…' + addr.slice(-4);
 }
 
 function populateShareCard(){
@@ -1453,7 +1546,7 @@ function populateShareCard(){
   $('#sc_l4').textContent = t('sameBagAth');
   $('#sc_v4').textContent = fmtUSDFull(hero.athValue);
 
-  $('#sc_addr').textContent = maskAddress();
+  $('#sc_addr').textContent = maskAddress(lastAddr);
   $('#sc_dates').textContent = t('boughtSold')(fmtDate(hero.boughtAt), fmtDate(hero.soldAt));
 
   // (re)build QR — qrcodejs appends, so clear first
