@@ -1245,26 +1245,21 @@ async function connectWallet(){
     // Force the wallet to re-prompt every time. eth_requestAccounts is
     // idempotent in MetaMask et al. — if the user disconnects from the
     // wallet side, a second call returns silently. wallet_requestPermissions
-    // always pops the account-picker. We fall back gracefully if a wallet
-    // (e.g. some mobile in-app browsers) does not implement it.
-    let accounts = [];
+    // always pops the account-picker. Some wallets don't support it, so we
+    // fall through gracefully. Either way we read the address from
+    // eth_requestAccounts (the caveat shape varies between wallets and is
+    // not a reliable source of addresses).
     try{
-      const perms = await provider.request({
+      await provider.request({
         method: 'wallet_requestPermissions',
         params: [{ eth_accounts: {} }]
       });
-      const caveat = perms?.[0]?.caveats?.find(c => c.type === 'restrictReturnedAccounts' || c.type === 'filterResponse');
-      accounts = caveat?.value || [];
     }catch(permErr){
-      // method not supported — fall through to eth_requestAccounts
-      if(permErr?.code && permErr.code !== -32601 && permErr.code !== -32603){
-        throw permErr;
-      }
+      if(permErr?.code === 4001) throw permErr; // user rejected
+      // method not supported / other — ignore, eth_requestAccounts will handle
     }
-    if(!accounts.length){
-      accounts = await provider.request({ method: 'eth_requestAccounts' });
-    }
-    const addr = accounts[0];
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    const addr = accounts && accounts[0];
     if(!addr) throw new Error('no account returned');
 
     $('#landing').style.display='none';
