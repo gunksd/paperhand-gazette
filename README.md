@@ -12,16 +12,28 @@
 
 1. Connect a wallet (read-only, EIP-1193 / EIP-6963).
 2. Pull every ERC-20 transfer for that address from Etherscan v2.
-3. Treat outgoing transfers as "sells", deduplicate by token contract.
-4. Run each token through GoPlus token-security to drop honeypots, blacklisted, high sell-tax, non-sellable, and closed-source contracts.
+3. Identify real **buy → sell-to-DEX** events per token (see Detection logic below). Wallet-to-wallet transfers, bridges, deposits and stablecoins are excluded.
+4. Run each surviving token through GoPlus token-security to drop honeypots, blacklisted, high sell-tax, non-sellable, and closed-source contracts.
 5. Look up each survivor on CoinGecko: ATH price + historical sell-day price.
-6. Compute `lostUSD = amountSold × athPrice − received` and rank.
+6. Compute `lostUSD = soldAmount × athPrice − received` and rank.
 7. Render the front page as a Victorian-newspaper obituary, with sub-obits for the runners-up.
 
 Special editions:
 
-- **Clean Hands edition** — wallet has no ERC-20 history (or every sold token was filtered out). Replaces the obit with a "no obituaries to print" notice.
+- **Clean Hands edition** — wallet has no qualifying paperhand sells (or every candidate was filtered out). Replaces the obit with a "no obituaries to print" notice.
 - **Sample edition** — runs without a wallet so anyone can preview.
+
+## Detection logic
+
+We care about *paperhand* sells, not every outgoing transfer. A token only counts if **all** of these hold:
+
+1. **You bought it first.** The first IN of that token must precede any qualifying OUT (`firstSeen` = first IN timestamp).
+2. **The OUT is a swap, not a transfer.** A transfer counts as a swap if either:
+   - the destination is a known DEX router (Uniswap V2 / V3 / Universal Router / V4, SushiSwap, PancakeSwap Smart/V3/V2, 1inch V5/V6, 0x, Paraswap V5/V6, CowSwap GPv2, Permit2), **or**
+   - the same tx hash also contains an IN of a *different* token to your wallet (the universal hallmark of an atomic swap — covers Uniswap V2/V3 pool-direct routes where the `to` address is the pool, plus any aggregator that splits across pools).
+3. **It is not a stablecoin.** Hard contract list (USDC / USDT / DAI / BUSD / TUSD / USDP / FRAX / LUSD / PYUSD / sUSD / GUSD / EURS / EURT) plus a `^USD*` / `^EUR*` symbol heuristic.
+
+This catches real DEX sells across Uniswap-style AMMs without maintaining an exhaustive pool address list, while excluding wallet-to-wallet transfers, bridges, CEX deposits, and gifts.
 
 ## Stack
 
@@ -29,18 +41,18 @@ Special editions:
 |---|---|---|
 | Frontend | Single-file `index.html`, ethers v6, qrcodejs, html2canvas | No build step. Works in any wallet's in-app browser. |
 | Backend | Vercel serverless functions (`/api/*`) | Hides API keys; adds CDN cache (`s-maxage`). |
-| Wallet | EIP-1193 + EIP-6963 + async-injection wait | imToken/Coinbase/Rabby inject `window.ethereum` asynchronously; first-paint button clicks were racing. |
-| Chain data | Etherscan v2 multichain (`chainid=1`) | Free, covers full ERC-20 history. |
+| Wallet | EIP-1193 + EIP-6963 + async-injection wait + `wallet_requestPermissions` for re-prompt | imToken/Coinbase/Rabby inject `window.ethereum` asynchronously; first-paint button clicks were racing. |
+| Chain data | Etherscan v2 multichain (`chainid=1`, newest 10k tokentx) | Free, covers full ERC-20 history within the serverless budget. |
 | Prices | CoinGecko free API + Demo key | ATH and historical price (`/coins/{id}/history?date=DD-MM-YYYY`). |
 | Security | GoPlus `token_security/1` | Free honeypot/scam classifier. |
-| Sharing | html2canvas → PNG | Generates a shareable obituary image (download / clipboard / `navigator.share`). |
+| Sharing | html2canvas → PNG, fixed 1080×1350 off-screen card | gmgn-style dark card with masked address (`0xab12…cd34`) and QR; download / clipboard / `navigator.share`. |
 | i18n | Vanilla `data-i18n` + `LANG` dictionary | EN / 中文. |
 
 ## API routes
 
 All proxied through Vercel serverless so no keys are exposed to the browser.
 
-- `GET /api/transfers?addr=0x…` — Etherscan v2 ERC-20 history (`s-maxage=300`)
+- `GET /api/transfers?addr=0x…` — Etherscan v2 ERC-20 history (`maxDuration=30`, `s-maxage=300`)
 - `GET /api/coingecko?path=coins/ethereum/contract/0x…` — CoinGecko proxy (`s-maxage=600`)
 - `GET /api/goplus?addr=0x…` — GoPlus honeypot check (`s-maxage=86400`)
 
@@ -95,17 +107,19 @@ Token Core is imToken's wallet engine. It normalises wallet behaviour across mob
 
 ## How to use it (end-user)
 
-- **Desktop with MetaMask / Rabby** — open the URL, click "Read My Obituary", approve the connect prompt.
+- **Top-right wallet badge** — persistent. Shows "Connect Wallet" with a grey dot when disconnected; click it to connect. After connecting it turns green and shows your truncated address; click the address to copy the full version, or hit Disconnect to revoke.
+- **Desktop with MetaMask / Rabby** — open the URL, click "Read My Obituary" (or the badge), approve the connect prompt.
 - **Mobile imToken** — paste the URL into the imToken in-app browser, or scan the QR shown by the desktop page, then tap "Read My Obituary".
 - **No wallet** — click "See a sample edition" to view a curated demo with PEPE / SOL / SHIB / LINK / RNDR / INJ.
-- After the report renders, hit "Share This Obituary" to generate a PNG (download / copy / system-share).
+- After the report renders, hit "Share This Obituary" to generate a 1080×1350 PNG (download / copy / system-share). The image masks the address as `0xab12…cd34`.
 - Hit "Try another wallet" to return to the landing page and connect a different address.
 
 ## Caveats
 
-- We label outgoing ERC-20 transfers as "sells". A transfer from your wallet to a friend or to a non-DEX contract is also counted; for sharper accuracy you would whitelist Uniswap / SushiSwap / 0x routers.
 - We use *lifetime* ATH, not peak-after-sell. So a token that already ATH'd before you sold will still print a number; sometimes the "loss" is small or negative and falls below tokens you genuinely paperhanded.
 - "Lost" is the USD that bag would be at ATH today minus what you received — fictional in the sense that nobody sells at the exact top. The Gazette is honest about that on the landing page.
+- Etherscan returns at most 10,000 most-recent ERC-20 transfers per request. For very active wallets older history is truncated.
+- Detection is heuristic-based — it does not parse swap logs at the contract level. The cross-token same-tx heuristic is robust for AMM swaps but may miss exotic flows (e.g. multi-hop trades that route through your wallet, fee rebates).
 
 ## License
 
