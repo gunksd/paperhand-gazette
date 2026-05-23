@@ -416,6 +416,76 @@
   .report-back{display:flex;justify-content:center;margin-top:24px;padding-bottom:8px}
   .report-back button{background:transparent;color:var(--ink);border:1px solid var(--rule);padding:12px 22px;font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-size:12px;cursor:pointer}
   .report-back button:hover{background:var(--ink);color:var(--paper)}
+
+  /* ============ MOBILE ============ */
+  @media (max-width:700px){
+    body{font-size:16px;line-height:1.5}
+    body::before{background-image:none} /* drop the vertical fold line, looks busy on narrow screens */
+    .sheet{padding:18px 16px 60px;}
+    .top-rule{font-size:9px;letter-spacing:.15em;gap:8px;flex-wrap:wrap;justify-content:center;text-align:center}
+    .masthead{padding:12px 0 4px}
+    .masthead h1{font-size:clamp(40px,12vw,72px)}
+    .masthead .tag{font-size:14px;margin-top:6px}
+    .meta-rule{grid-template-columns:1fr;gap:6px;text-align:center;padding:8px 0;font-size:9px;letter-spacing:.14em}
+    .meta-rule .right{text-align:center}
+    .meta-rule .center{font-size:12px}
+
+    .landing{gap:24px;padding-top:20px}
+    .lede h2{font-size:34px;margin-bottom:14px}
+    .dropcap::first-letter{font-size:3.6em;padding:4px 8px 0 0}
+    .pull{font-size:18px;padding:14px 0;margin:18px 0}
+    .sidebar{padding:18px}
+    .stamp{width:88px;height:88px;font-size:9px;top:-10px;right:-10px}
+    .stamp small{font-size:7px}
+    .connect-btn{padding:14px;font-size:14px;letter-spacing:.14em}
+
+    .obit-headline{padding:24px 0 18px;margin-top:18px}
+    .obit-headline h2{font-size:42px}
+    .obit-headline .deck{font-size:16px}
+    .hero-obit{gap:20px;padding:22px 0}
+    .tomb{padding:20px 16px}
+    .tomb h3{font-size:40px}
+    .tomb .lost-amount{font-size:36px}
+    .eulogy p{font-size:16px}
+    .eulogy .stat-row{grid-template-columns:1fr}
+    .eulogy .stat-row > div{border-right:none}
+    .eulogy .stat-row > div:nth-last-child(-n+2){border-bottom:1px solid var(--rule)}
+    .eulogy .stat-row > div:last-child{border-bottom:none}
+    .eulogy .stat-row .val{font-size:18px}
+
+    .others-head{font-size:20px;padding:22px 0 14px}
+    .obit-card{padding:18px 16px}
+    .obit-card h5{font-size:24px}
+    .obit-card .lost{font-size:22px}
+
+    .footer-band{flex-direction:column;align-items:stretch;gap:14px;padding-top:14px;font-size:9px;letter-spacing:.08em}
+    .share-btn{padding:12px 16px;font-size:12px}
+
+    /* top-right controls — stack vertically and shrink */
+    .lang-switch{top:8px;right:8px;font-size:10px}
+    .lang-switch button{padding:5px 10px}
+    .wallet-badge{top:38px;right:8px;font-size:10px}
+    .wallet-badge .dot{width:7px;height:7px;margin:0 6px}
+    .wallet-badge .addr{padding:5px 8px 5px 0}
+    .wallet-badge .disc{padding:5px 8px}
+
+    /* modals */
+    .qr-card,.share-card{padding:18px 16px;max-width:none;width:100%}
+    .qr-card h4,.share-card h4{font-size:18px}
+    .share-card #shareImg{max-height:55vh}
+    .share-card .ops button{padding:8px 12px;font-size:11px}
+
+    /* clean edition */
+    .clean{padding:36px 16px 20px}
+    .clean .seal{width:140px;height:140px;font-size:14px}
+    .clean h2{font-size:36px}
+    .clean p{font-size:16px}
+
+    /* working */
+    .working{padding:48px 16px}
+    .working h3{font-size:24px}
+    .working .lines{font-size:10px;letter-spacing:.12em}
+  }
 </style>
 </head>
 <body>
