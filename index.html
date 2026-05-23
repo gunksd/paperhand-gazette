@@ -344,17 +344,17 @@
   .share-card .ops button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--blood)}
   .share-card .hint{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-soft);margin-top:10px;text-transform:uppercase}
 
-  /* ============== SHARE CARD (off-screen, fixed 1080x1350) ============== */
-  .share-card-stage{position:fixed;left:-99999px;top:0;width:1080px;height:1350px;pointer-events:none;}
+  /* ============== SHARE CARD (off-screen, fixed width 1080, auto-grow height) ============== */
+  .share-card-stage{position:fixed;left:-99999px;top:0;width:1080px;pointer-events:none;}
   .scard{
-    width:1080px;height:1350px;
+    width:1080px;min-height:1350px;
     background:#15110c;
     background-image:
       radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
       radial-gradient(circle at 20% 10%, rgba(138,13,13,0.18), transparent 50%),
       radial-gradient(circle at 80% 90%, rgba(138,13,13,0.12), transparent 55%);
     background-size:4px 4px, 100% 100%, 100% 100%;
-    padding:60px;
+    padding:48px;
     font-family:'EB Garamond',Georgia,serif;
     color:#f1e7d0;
     position:relative;
@@ -363,56 +363,55 @@
   .scard .inner{
     flex:1;border:2px solid #f1e7d0;
     box-shadow:inset 0 0 0 6px #15110c, inset 0 0 0 8px #f1e7d0;
-    padding:60px 70px 50px;
-    display:flex;flex-direction:column;justify-content:space-between;
+    padding:42px 56px 38px;
+    display:flex;flex-direction:column;gap:28px;
   }
-  .scard .brand-row{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #f1e7d0;padding-bottom:18px;}
-  .scard .brand{font-family:'UnifrakturCook',serif;font-size:52px;line-height:1;letter-spacing:.01em;}
-  .scard .brand-sub{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:#c9b78a;}
-  .scard .ed{font-family:'Special Elite',monospace;font-size:14px;letter-spacing:.25em;color:#c9b78a;text-transform:uppercase;text-align:right}
+  .scard .brand-row{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #f1e7d0;padding-bottom:16px;}
+  .scard .brand{font-family:'UnifrakturCook',serif;font-size:48px;line-height:1;letter-spacing:.01em;}
+  .scard .brand-sub{font-family:'Playfair Display',serif;font-style:italic;font-size:17px;color:#c9b78a;margin-top:4px;}
+  .scard .ed{font-family:'Special Elite',monospace;font-size:13px;letter-spacing:.25em;color:#c9b78a;text-transform:uppercase;text-align:right}
 
   .scard .kicker{
-    text-align:center;margin-top:46px;
-    font-family:'Special Elite',monospace;font-size:18px;letter-spacing:.45em;text-transform:uppercase;
+    text-align:center;
+    font-family:'Special Elite',monospace;font-size:16px;letter-spacing:.45em;text-transform:uppercase;
     color:#e35a4a;
   }
   .scard .obit-name{
     text-align:center;font-family:'Playfair Display',serif;font-weight:900;
-    font-size:148px;line-height:1;margin:18px 0 4px;letter-spacing:-.01em;
+    font-size:120px;line-height:1;margin:8px 0 4px;letter-spacing:-.01em;
   }
-  .scard .obit-ticker{text-align:center;font-family:'Special Elite',monospace;font-size:22px;letter-spacing:.35em;color:#c9b78a;}
+  .scard .obit-ticker{text-align:center;font-family:'Special Elite',monospace;font-size:20px;letter-spacing:.35em;color:#c9b78a;}
 
-  .scard .lost-block{text-align:center;margin-top:42px;}
-  .scard .lost-label{font-family:'Special Elite',monospace;font-size:16px;letter-spacing:.3em;text-transform:uppercase;color:#c9b78a;}
+  .scard .lost-block{text-align:center;}
+  .scard .lost-label{font-family:'Special Elite',monospace;font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#c9b78a;}
   .scard .lost-amount{
     font-family:'Playfair Display',serif;font-weight:900;
-    font-size:180px;line-height:1;color:#e35a4a;margin-top:10px;letter-spacing:-.02em;
+    font-size:148px;line-height:1;color:#e35a4a;margin-top:8px;letter-spacing:-.02em;
     text-shadow:6px 6px 0 rgba(0,0,0,0.4);
   }
-  .scard .mult{font-family:'Playfair Display',serif;font-style:italic;font-size:38px;color:#f1e7d0;margin-top:12px;}
+  .scard .mult{font-family:'Playfair Display',serif;font-style:italic;font-size:34px;color:#f1e7d0;margin-top:10px;}
   .scard .mult b{color:#e35a4a;font-weight:900;font-style:normal}
 
   .scard .stat-grid{
-    margin-top:46px;
     display:grid;grid-template-columns:1fr 1fr;
     border:1px solid #c9b78a;
   }
   .scard .stat-grid > div{
-    padding:22px 26px;border-right:1px solid #c9b78a;border-bottom:1px solid #c9b78a;
+    padding:18px 24px;border-right:1px solid #c9b78a;border-bottom:1px solid #c9b78a;
   }
   .scard .stat-grid > div:nth-child(2n){border-right:none}
   .scard .stat-grid > div:nth-last-child(-n+2){border-bottom:none}
-  .scard .stat-label{font-family:'Special Elite',monospace;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#c9b78a;}
-  .scard .stat-val{font-family:'Playfair Display',serif;font-weight:700;font-size:32px;margin-top:8px;color:#f1e7d0}
+  .scard .stat-label{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#c9b78a;}
+  .scard .stat-val{font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-top:6px;color:#f1e7d0}
   .scard .stat-val.red{color:#e35a4a}
 
-  .scard .foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1e7d0;padding-top:22px;margin-top:auto;}
-  .scard .foot-left{font-family:'Special Elite',monospace;font-size:14px;letter-spacing:.18em;color:#c9b78a;text-transform:uppercase;line-height:1.6}
+  .scard .foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1e7d0;padding-top:20px;margin-top:auto;}
+  .scard .foot-left{font-family:'Special Elite',monospace;font-size:13px;letter-spacing:.18em;color:#c9b78a;text-transform:uppercase;line-height:1.6}
   .scard .foot-left b{color:#f1e7d0;letter-spacing:.22em}
-  .scard .foot-right{display:flex;align-items:center;gap:18px}
-  .scard .qr-wrap{width:140px;height:140px;background:#f1e7d0;padding:8px;display:flex;align-items:center;justify-content:center}
-  .scard .qr-wrap img,.scard .qr-wrap canvas{display:block;width:124px !important;height:124px !important}
-  .scard .url{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.15em;color:#c9b78a;text-align:right;line-height:1.5}
+  .scard .foot-right{display:flex;align-items:center;gap:16px}
+  .scard .qr-wrap{width:130px;height:130px;background:#f1e7d0;padding:7px;display:flex;align-items:center;justify-content:center}
+  .scard .qr-wrap img,.scard .qr-wrap canvas{display:block;width:116px !important;height:116px !important}
+  .scard .url{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.15em;color:#c9b78a;text-align:right;line-height:1.5}
   .scard .url b{color:#e35a4a}
   .report-back{display:flex;justify-content:center;margin-top:24px;padding-bottom:8px}
   .report-back button{background:transparent;color:var(--ink);border:1px solid var(--rule);padding:12px 22px;font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-size:12px;cursor:pointer}
@@ -1605,15 +1604,17 @@ async function renderShareImage(){
   // doesn't fall back to a generic serif mid-render.
   try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch{}
   await new Promise(r=>requestAnimationFrame(()=>r()));
+  const w = target.offsetWidth;
+  const h = target.scrollHeight;
   const canvas = await html2canvas(target, {
     backgroundColor: null,
     scale: 2,
     useCORS: true,
     logging: false,
-    width: 1080,
-    height: 1350,
-    windowWidth: 1080,
-    windowHeight: 1350
+    width: w,
+    height: h,
+    windowWidth: w,
+    windowHeight: h
   });
   const dataUrl = canvas.toDataURL('image/png');
   const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
