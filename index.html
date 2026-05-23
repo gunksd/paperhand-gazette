@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>The Paperhand Gazette — Obituaries for Coins You Sold Too Early</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%23f1e7d0'/><rect x='4' y='4' width='56' height='56' rx='4' fill='none' stroke='%2315110c' stroke-width='2'/><rect x='8' y='8' width='48' height='48' rx='2' fill='none' stroke='%2315110c' stroke-width='1'/><path d='M30 14 h4 v14 h10 v4 h-10 v22 h-4 v-22 h-10 v-4 h10 z' fill='%238a0d0d'/><circle cx='32' cy='32' r='22' fill='none' stroke='%238a0d0d' stroke-width='1' stroke-dasharray='2 2'/></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
@@ -671,6 +672,13 @@ $$('.lang-switch button').forEach(b=>{
   b.addEventListener('click', ()=>{
     currentLang = b.dataset.lang;
     applyLang();
+    // text changed — drop cached share image, regen if a report is on screen
+    lastShareBlob = null;
+    lastShareDataUrl = null;
+    shareRenderPromise = null;
+    if($('#report').classList.contains('active')){
+      setTimeout(()=> prefetchShareImage(), 200);
+    }
   });
 });
 applyLang();
@@ -838,6 +846,10 @@ function renderReport(addr, trades, filteredText){
   });
 
   $('#filteredList').textContent = filteredText;
+
+  // pre-render the share image now (address masked) so the share modal is
+  // instant and idempotent across language toggles
+  setTimeout(()=> prefetchShareImage(), 400);
 }
 
 /* Show clean-hands edition for empty / fully-filtered wallets */
@@ -858,6 +870,9 @@ function backToLanding(){
   $('#landing').style.display='grid';
   $('#errMsg').textContent='';
   $$('#workLines div').forEach(d=>d.classList.remove('on'));
+  lastShareBlob = null;
+  lastShareDataUrl = null;
+  shareRenderPromise = null;
   window.scrollTo({ top:0, behavior:'instant' });
 }
 
@@ -1072,9 +1087,30 @@ async function connectWallet(){
     return;
   }
   try{
-    const ep = new ethers.BrowserProvider(provider);
-    const accounts = await ep.send('eth_requestAccounts', []);
+    // Force the wallet to re-prompt every time. eth_requestAccounts is
+    // idempotent in MetaMask et al. — if the user disconnects from the
+    // wallet side, a second call returns silently. wallet_requestPermissions
+    // always pops the account-picker. We fall back gracefully if a wallet
+    // (e.g. some mobile in-app browsers) does not implement it.
+    let accounts = [];
+    try{
+      const perms = await provider.request({
+        method: 'wallet_requestPermissions',
+        params: [{ eth_accounts: {} }]
+      });
+      const caveat = perms?.[0]?.caveats?.find(c => c.type === 'restrictReturnedAccounts' || c.type === 'filterResponse');
+      accounts = caveat?.value || [];
+    }catch(permErr){
+      // method not supported — fall through to eth_requestAccounts
+      if(permErr?.code && permErr.code !== -32601 && permErr.code !== -32603){
+        throw permErr;
+      }
+    }
+    if(!accounts.length){
+      accounts = await provider.request({ method: 'eth_requestAccounts' });
+    }
     const addr = accounts[0];
+    if(!addr) throw new Error('no account returned');
 
     $('#landing').style.display='none';
     $('#working').classList.add('active');
@@ -1096,6 +1132,12 @@ async function connectWallet(){
     renderReport(addr, trades, filteredText);
   }catch(e){
     console.error(e);
+    // user rejection — quietly return to landing, no scary red text
+    if(e?.code === 4001 || /rejected|denied/i.test(e?.message||'')){
+      $('#working').classList.remove('active');
+      $('#landing').style.display='grid';
+      return;
+    }
     $('#errMsg').textContent = t('errGeneric') + (e.shortMessage || e.message || e);
     $('#working').classList.remove('active');
     $('#landing').style.display='grid';
@@ -1125,40 +1167,79 @@ async function showSample(){
 }
 
 /* ============== SHARE AS IMAGE ============== */
+// We pre-render the share image as soon as the report is on screen, so that
+// clicking "Share" is instant. The image is regenerated when a new wallet is
+// analysed. The user's address is masked in the image so the obit can be
+// posted publicly without doxing.
 let lastShareBlob = null;
+let lastShareDataUrl = null;
+let shareRenderPromise = null;
+
+function maskAddress(short){
+  // short looks like 0xabcd…ef12 — turn into 0x••••…••••
+  if(!short) return '0x••••…••••';
+  return '0x' + '•'.repeat(4) + '…' + '•'.repeat(4);
+}
 
 async function renderShareImage(){
-  // Capture the entire report sheet as an image.
-  // We freeze a copy of the relevant DOM so the live page is not affected.
   const target = document.querySelector('.sheet');
-  const opts = {
-    backgroundColor: '#f1e7d0',
-    scale: Math.min(window.devicePixelRatio || 1, 2),
-    useCORS: true,
-    logging: false,
-    // skip the language switch overlay
-    ignoreElements: (el)=> el.classList && (el.classList.contains('lang-switch') || el.classList.contains('report-back'))
-  };
-  const canvas = await html2canvas(target, opts);
-  const dataUrl = canvas.toDataURL('image/png');
-  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-  return { dataUrl, blob };
+  // Snapshot the address-bearing nodes, swap to masked, render, then restore.
+  const swaps = [];
+  const shortEl = document.getElementById('shortAddr');
+  const footEl  = document.getElementById('footAddr');
+  const deckEl  = document.getElementById('frontDeck');
+  if(shortEl){ swaps.push([shortEl, 'textContent', shortEl.textContent]); shortEl.textContent = maskAddress(shortEl.textContent); }
+  if(footEl ){ swaps.push([footEl,  'textContent', footEl.textContent ]); footEl.textContent  = maskAddress(footEl.textContent); }
+  if(deckEl ){
+    swaps.push([deckEl, 'innerHTML', deckEl.innerHTML]);
+    deckEl.innerHTML = deckEl.innerHTML.replace(/0x[a-fA-F0-9]{4}…[a-fA-F0-9]{4}/g, maskAddress());
+  }
+  try{
+    const opts = {
+      backgroundColor: '#f1e7d0',
+      scale: Math.min(window.devicePixelRatio || 1, 2),
+      useCORS: true,
+      logging: false,
+      ignoreElements: (el)=> el.classList && (el.classList.contains('lang-switch') || el.classList.contains('report-back'))
+    };
+    const canvas = await html2canvas(target, opts);
+    const dataUrl = canvas.toDataURL('image/png');
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    return { dataUrl, blob };
+  }finally{
+    // restore original (un-masked) content for the live view
+    for(const [el, prop, val] of swaps) el[prop] = val;
+  }
+}
+
+function prefetchShareImage(){
+  lastShareBlob = null;
+  lastShareDataUrl = null;
+  shareRenderPromise = renderShareImage().then(({ dataUrl, blob })=>{
+    lastShareBlob = blob;
+    lastShareDataUrl = dataUrl;
+    return { dataUrl, blob };
+  }).catch(e => { console.warn('prefetch share failed', e); throw e; });
+  return shareRenderPromise;
 }
 
 async function shareEdition(){
   const overlay = $('#shareOverlay');
   const img = $('#shareImg');
   const hint = $('#shareHint');
+  overlay.classList.add('active');
+  if(lastShareDataUrl){
+    img.src = lastShareDataUrl;
+    hint.textContent = t('shareHint');
+    return;
+  }
   hint.textContent = t('shareRendering');
   img.removeAttribute('src');
-  overlay.classList.add('active');
   try{
-    const { dataUrl, blob } = await renderShareImage();
+    const { dataUrl } = shareRenderPromise ? await shareRenderPromise : await prefetchShareImage();
     img.src = dataUrl;
-    lastShareBlob = blob;
     hint.textContent = t('shareHint');
   }catch(e){
-    console.error(e);
     hint.textContent = (e.message || 'render failed');
   }
 }
