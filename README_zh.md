@@ -4,6 +4,11 @@
 >
 > imToken 十周年 AI 共创活动作品 —— 单页链上小报，挖出你最大的一次「纸手」卖出，给它印一份维多利亚式讣告。
 
+**🏆 imToken 十周年 AI 共创活动获奖作品**
+**二等奖 + 专项奖**
+
+> *本仓库已封存，不再主动维护。Demo 保持在线。*
+
 - 在线体验：https://paperhand-gazette.vercel.app
 - 仓库：https://github.com/gunksd/paperhand-gazette
 - English README：[README.md](./README.md)

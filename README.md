@@ -4,6 +4,11 @@
 >
 > imToken 10th-anniversary AI co-creation entry — a one-page on-chain newspaper that exhumes your biggest "paperhand" sell and prints an obituary for it.
 
+**🏆 Winner — imToken 10th Anniversary AI Co-Creation Contest**
+**2nd Place + Special Award**
+
+> *This repository is archived. The demo remains live but the codebase is no longer actively maintained.*
+
 - Live: https://paperhand-gazette.vercel.app
 - Repo: https://github.com/gunksd/paperhand-gazette
 - 中文 README：[README_zh.md](./README_zh.md)
